@@ -1,0 +1,4 @@
+#include "Config.xcconfig"
+API_BASE_URL = https://localhost:8787
+APP_SYNC_TOKEN = debug-token
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG

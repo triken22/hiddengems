@@ -1,0 +1,11 @@
+name = "hidden-gems"
+main = "src/index.ts"
+compatibility_date = "2024-03-15"
+
+[vars]
+APP_SYNC_TOKEN = "change-me"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "hidden_gems"
+database_id = ""
