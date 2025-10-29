@@ -81,13 +81,23 @@ final class HomeViewModel: ObservableObject {
     func filterSpots() {
         var filtered = spots.filter { !$0.deleted }
         
-        // Filter by search text
+        // Filter by search text with enhanced search
         if !searchText.isEmpty {
+            let searchTerms = searchText.lowercased().components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
+            
             filtered = filtered.filter { spot in
-                spot.title.localizedCaseInsensitiveContains(searchText) ||
-                spot.subtitle?.localizedCaseInsensitiveContains(searchText) == true ||
-                spot.details.localizedCaseInsensitiveContains(searchText) ||
-                spot.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
+                let searchableText = [
+                    spot.title,
+                    spot.subtitle ?? "",
+                    spot.details,
+                    spot.tags.joined(separator: " "),
+                    spot.topics.joined(separator: " ")
+                ].joined(separator: " ").lowercased()
+                
+                // Check if all search terms are found in the searchable text
+                return searchTerms.allSatisfy { term in
+                    searchableText.contains(term)
+                }
             }
         }
         
@@ -99,7 +109,60 @@ final class HomeViewModel: ObservableObject {
             }
         }
         
+        // Sort by relevance (exact matches first, then partial matches)
+        if !searchText.isEmpty {
+            filtered = filtered.sorted { spot1, spot2 in
+                let score1 = calculateRelevanceScore(spot: spot1, searchText: searchText)
+                let score2 = calculateRelevanceScore(spot: spot2, searchText: searchText)
+                return score1 > score2
+            }
+        }
+        
         filteredSpots = filtered
+    }
+    
+    private func calculateRelevanceScore(spot: Spot, searchText: String) -> Int {
+        let searchableText = [
+            spot.title,
+            spot.subtitle ?? "",
+            spot.details,
+            spot.tags.joined(separator: " "),
+            spot.topics.joined(separator: " ")
+        ].joined(separator: " ").lowercased()
+        
+        let searchLower = searchText.lowercased()
+        var score = 0
+        
+        // Exact title match gets highest score
+        if spot.title.lowercased().contains(searchLower) {
+            score += 100
+        }
+        
+        // Subtitle match
+        if let subtitle = spot.subtitle, subtitle.lowercased().contains(searchLower) {
+            score += 50
+        }
+        
+        // Tag matches
+        for tag in spot.tags {
+            if tag.lowercased().contains(searchLower) {
+                score += 30
+            }
+        }
+        
+        // Topic matches
+        for topic in spot.topics {
+            if topic.lowercased().contains(searchLower) {
+                score += 20
+            }
+        }
+        
+        // Details match
+        if spot.details.lowercased().contains(searchLower) {
+            score += 10
+        }
+        
+        return score
     }
     
     func updateSearchText(_ text: String) {
@@ -144,11 +207,14 @@ final class HomeViewModel: ObservableObject {
                          locationService: locationService)
     }
     
-    func createSpotViewModel() -> CreateSpotViewModel {
-        CreateSpotViewModel(spotRepository: spotRepository,
-                           mediaService: mediaService,
-                           aiService: aiService,
-                           locationService: locationService)
+    func createSpotViewModel(initialLocation: CLLocationCoordinate2D? = nil) -> CreateSpotViewModel {
+        CreateSpotViewModel(
+            spotRepository: spotRepository,
+            mediaService: mediaService,
+            aiService: aiService,
+            locationService: locationService,
+            initialLocation: initialLocation
+        )
     }
     
     func onAppear() {

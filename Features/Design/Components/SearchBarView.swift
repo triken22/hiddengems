@@ -32,6 +32,8 @@ struct SearchBarView: View {
                 .font(AppTypography.searchText)
                 .foregroundColor(AppColors.textPrimary)
                 .focused($isFocused)
+                .accessibilityLabel("Search field")
+                .accessibilityHint("Enter text to search for spots")
                 .onChange(of: searchText) { _, newValue in
                     onTextChanged?(newValue)
                 }

@@ -211,6 +211,132 @@ struct EmptyStateView: View {
     }
 }
 
+// MARK: - Error State
+struct ErrorStateView: View {
+    let error: Error
+    let retryAction: (() -> Void)?
+    let dismissAction: (() -> Void)?
+    
+    @State private var isRetrying = false
+    
+    var body: some View {
+        VStack(spacing: AppSpacing.lg) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 64))
+                .foregroundColor(AppColors.error)
+            
+            VStack(spacing: AppSpacing.sm) {
+                Text("Something went wrong")
+                    .appFont(.title3, weight: .semibold, color: AppColors.textPrimary)
+                
+                Text(error.localizedDescription)
+                    .appFont(.body, color: AppColors.textSecondary)
+                    .multilineTextAlignment(.center)
+            }
+            
+            HStack(spacing: AppSpacing.md) {
+                if let dismissAction = dismissAction {
+                    Button(action: dismissAction) {
+                        Text("Dismiss")
+                            .font(AppTypography.buttonText)
+                            .foregroundColor(AppColors.textPrimary)
+                            .padding(.horizontal, AppSpacing.lg)
+                            .padding(.vertical, AppSpacing.md)
+                            .background(AppColors.surface)
+                            .cornerRadius(AppSpacing.buttonCornerRadius)
+                    }
+                }
+                
+                if let retryAction = retryAction {
+                    Button(action: {
+                        isRetrying = true
+                        retryAction()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                            isRetrying = false
+                        }
+                    }) {
+                        HStack {
+                            if isRetrying {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            }
+                            Text(isRetrying ? "Retrying..." : "Try Again")
+                        }
+                        .font(AppTypography.buttonText)
+                        .foregroundColor(AppColors.textInverse)
+                        .padding(.horizontal, AppSpacing.lg)
+                        .padding(.vertical, AppSpacing.md)
+                        .background(AppColors.primary)
+                        .cornerRadius(AppSpacing.buttonCornerRadius)
+                    }
+                    .disabled(isRetrying)
+                }
+            }
+        }
+        .padding(AppSpacing.xxl)
+    }
+}
+
+// MARK: - Network Error Handler
+struct NetworkErrorHandler: ViewModifier {
+    @Binding var isPresented: Bool
+    let error: Error?
+    let retryAction: (() -> Void)?
+    
+    func body(content: Content) -> some View {
+        content
+            .alert("Network Error", isPresented: $isPresented) {
+                if let retryAction = retryAction {
+                    Button("Retry") {
+                        retryAction()
+                    }
+                }
+                Button("OK") {
+                    isPresented = false
+                }
+            } message: {
+                Text(error?.localizedDescription ?? "An unknown error occurred")
+            }
+    }
+}
+
+// MARK: - Offline Indicator
+struct OfflineIndicator: View {
+    @State private var isOffline = false
+    
+    var body: some View {
+        if isOffline {
+            HStack {
+                Image(systemName: "wifi.slash")
+                    .foregroundColor(AppColors.error)
+                Text("You're offline")
+                    .font(AppTypography.caption)
+                    .foregroundColor(AppColors.error)
+                Spacer()
+            }
+            .padding(.horizontal, AppSpacing.lg)
+            .padding(.vertical, AppSpacing.sm)
+            .background(AppColors.error.opacity(0.1))
+            .transition(.move(edge: .top).combined(with: .opacity))
+        }
+    }
+}
+
+extension View {
+    func networkErrorHandler(
+        isPresented: Binding<Bool>,
+        error: Error?,
+        retryAction: (() -> Void)? = nil
+    ) -> some View {
+        self.modifier(NetworkErrorHandler(
+            isPresented: isPresented,
+            error: error,
+            retryAction: retryAction
+        ))
+    }
+}
+
 // MARK: - Preview
 #if DEBUG
 struct LoadingView_Previews: PreviewProvider {

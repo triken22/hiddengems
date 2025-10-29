@@ -1,6 +1,7 @@
 import SwiftUI
 import PhotosUI
 import CoreLocation
+import MapKit
 
 /// Multi-step spot creation flow with photo emphasis
 struct CreateSpotView: View {
@@ -25,6 +26,8 @@ struct CreateSpotView: View {
                     )
                     .padding(.horizontal, AppSpacing.lg)
                     .padding(.top, AppSpacing.sm)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Step \(viewModel.currentStep) of \(viewModel.totalSteps)")
                     
                     // Content
                     TabView(selection: $viewModel.currentStep) {
@@ -74,6 +77,7 @@ struct CreateSpotView: View {
                     }
                     .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                     .animation(.easeInOut, value: viewModel.currentStep)
+                    .ignoresSafeArea(.keyboard, edges: .bottom)
                 }
             }
             .navigationTitle("Create Spot")
@@ -83,6 +87,8 @@ struct CreateSpotView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .accessibilityLabel("Cancel spot creation")
+                    .accessibilityHint("Tap to cancel and return")
                 }
             }
             .overlay {
@@ -99,6 +105,12 @@ struct CreateSpotView: View {
                         dismiss()
                     }
                 }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
+                // Handle keyboard appearance
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+                // Handle keyboard dismissal
             }
         }
     }
@@ -307,6 +319,7 @@ struct SpotDetailsFormView: View {
     let onNext: () -> Void
     let onPrevious: () -> Void
     @FocusState private var focusedField: DetailField?
+    @State private var keyboardHeight: CGFloat = 0
     
     enum DetailField {
         case title, subtitle, details
@@ -478,8 +491,12 @@ struct LocationSelectionView: View {
     @State private var isGettingLocation = false
     @State private var locationError: String?
     @State private var selectedAddress: String?
+    @State private var searchResults: [MKMapItem] = []
+    @State private var isSearching = false
+    @State private var showingSearchResults = false
     
     private let locationService = DefaultLocationService()
+    private let searchCompleter = MKLocalSearchCompleter()
     
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.lg) {
@@ -516,14 +533,69 @@ struct LocationSelectionView: View {
                 }
                 .disabled(isGettingLocation)
                 
-                // Search bar
-                SearchBarView(
-                    searchText: $searchText,
-                    placeholder: "Search for a location..."
-                ) {
-                    // Handle search
-                } onTextChanged: { _ in
-                    // Handle text change
+                // Search bar with results
+                VStack(spacing: 0) {
+                    SearchBarView(
+                        searchText: $searchText,
+                        placeholder: "Search for a location..."
+                    ) {
+                        performSearch()
+                    } onTextChanged: { text in
+                        if text.count > 2 {
+                            performSearch()
+                        } else {
+                            searchResults = []
+                            showingSearchResults = false
+                        }
+                    }
+                    
+                    // Search results
+                    if showingSearchResults && !searchResults.isEmpty {
+                        ScrollView {
+                            LazyVStack(spacing: 0) {
+                                ForEach(searchResults, id: \.self) { mapItem in
+                                    Button(action: {
+                                        selectLocation(mapItem)
+                                    }) {
+                                        HStack(alignment: .top, spacing: AppSpacing.md) {
+                                            Image(systemName: "location.fill")
+                                                .foregroundColor(AppColors.primary)
+                                                .font(.system(size: 16))
+                                            
+                                            VStack(alignment: .leading, spacing: AppSpacing.xs) {
+                                                Text(mapItem.name ?? "Unknown Location")
+                                                    .font(AppTypography.body)
+                                                    .foregroundColor(AppColors.textPrimary)
+                                                    .multilineTextAlignment(.leading)
+                                                
+                                                if let address = mapItem.placemark.title {
+                                                    Text(address)
+                                                        .font(AppTypography.caption)
+                                                        .foregroundColor(AppColors.textSecondary)
+                                                        .multilineTextAlignment(.leading)
+                                                }
+                                            }
+                                            
+                                            Spacer()
+                                        }
+                                        .padding(.horizontal, AppSpacing.lg)
+                                        .padding(.vertical, AppSpacing.md)
+                                        .background(AppColors.surface)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                    
+                                    if mapItem != searchResults.last {
+                                        Divider()
+                                            .background(AppColors.border)
+                                    }
+                                }
+                            }
+                        }
+                        .frame(maxHeight: 200)
+                        .background(AppColors.surface)
+                        .cornerRadius(AppSpacing.buttonCornerRadius)
+                        .shadow(color: AppColors.shadow, radius: 4, x: 0, y: 2)
+                    }
                 }
                 
                 // Map selection button
@@ -604,6 +676,12 @@ struct LocationSelectionView: View {
         .sheet(isPresented: $showingMap) {
             LocationMapView(selectedLocation: $selectedLocation, selectedAddress: $selectedAddress)
         }
+        .onAppear {
+            // If location is already set, reverse geocode it
+            if let location = selectedLocation, selectedAddress == nil {
+                reverseGeocode(coordinate: location)
+            }
+        }
     }
     
     private func getCurrentLocation() {
@@ -617,7 +695,7 @@ struct LocationSelectionView: View {
                         selectedLocation = location.coordinate
                         isGettingLocation = false
                         // Reverse geocode to get address
-                        reverseGeocode(location: location)
+                        reverseGeocode(coordinate: location.coordinate)
                     }
                 } else {
                     await MainActor.run {
@@ -629,8 +707,10 @@ struct LocationSelectionView: View {
         }
     }
     
-    private func reverseGeocode(location: CLLocation) {
+    private func reverseGeocode(coordinate: CLLocationCoordinate2D) {
+        let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
         let geocoder = CLGeocoder()
+        
         geocoder.reverseGeocodeLocation(location) { placemarks, error in
             DispatchQueue.main.async {
                 if let placemark = placemarks?.first {
@@ -643,6 +723,45 @@ struct LocationSelectionView: View {
                 }
             }
         }
+    }
+    
+    private func performSearch() {
+        guard !searchText.isEmpty else {
+            searchResults = []
+            showingSearchResults = false
+            return
+        }
+        
+        isSearching = true
+        
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = searchText
+        request.region = MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194), // Default to SF
+            span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)
+        )
+        
+        let search = MKLocalSearch(request: request)
+        search.start { response, error in
+            DispatchQueue.main.async {
+                isSearching = false
+                if let error = error {
+                    print("Search error: \(error.localizedDescription)")
+                    searchResults = []
+                } else if let response = response {
+                    searchResults = Array(response.mapItems.prefix(5))
+                    showingSearchResults = !searchResults.isEmpty
+                }
+            }
+        }
+    }
+    
+    private func selectLocation(_ mapItem: MKMapItem) {
+        selectedLocation = mapItem.placemark.coordinate
+        selectedAddress = mapItem.placemark.title
+        searchText = mapItem.name ?? ""
+        showingSearchResults = false
+        searchResults = []
     }
 }
 

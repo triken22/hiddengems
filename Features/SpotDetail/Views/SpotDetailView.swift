@@ -1,5 +1,6 @@
 import SwiftUI
 import CoreLocation
+import MapKit
 
 /// Immersive spot detail view with photo gallery and parallax effects
 struct SpotDetailView: View {
@@ -50,6 +51,8 @@ struct SpotDetailView: View {
                                 .background(Circle().fill(Color.black.opacity(0.3)))
                         }
                         .padding(.trailing, AppSpacing.lg)
+                        .accessibilityLabel(isSaved ? "Remove from saved" : "Save spot")
+                        .accessibilityHint(isSaved ? "Tap to unsave this spot" : "Tap to save this spot")
                     }
                     .padding(.top, -AppSpacing.xl)
                     
@@ -227,6 +230,8 @@ struct PhotoGalleryView: View {
                     }
                 }
                 .padding(.bottom, AppSpacing.lg)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Image \(selectedIndex + 1) of \(images.count)")
             }
             
         }
@@ -245,6 +250,7 @@ struct SpotHeaderView: View {
                         .font(AppTypography.title1)
                         .fontWeight(.bold)
                         .foregroundColor(AppColors.textPrimary)
+                        .accessibilityAddTraits(.isHeader)
                     
                     if let subtitle = spot.subtitle {
                         Text(subtitle)
@@ -421,6 +427,15 @@ struct ReviewsSectionView: View {
 // MARK: - Map Section View
 struct MapSectionView: View {
     let spot: Spot
+    @State private var region: MKCoordinateRegion
+    
+    init(spot: Spot) {
+        self.spot = spot
+        _region = State(initialValue: MKCoordinateRegion(
+            center: spot.coordinate,
+            span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+        ))
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.md) {
@@ -429,27 +444,57 @@ struct MapSectionView: View {
                 .fontWeight(.semibold)
                 .foregroundColor(AppColors.textPrimary)
             
-            // Map placeholder
-            RoundedRectangle(cornerRadius: AppSpacing.buttonCornerRadius)
-                .fill(AppColors.surface)
-                .frame(height: 200)
-                .overlay(
-                    VStack {
-                        Image(systemName: "map.fill")
+            // Map with pin
+            Map(coordinateRegion: $region,
+                annotationItems: [spot]) { spot in
+                MapAnnotation(coordinate: spot.coordinate) {
+                    VStack(spacing: 0) {
+                        Image(systemName: "mappin.circle.fill")
                             .font(.title)
-                            .foregroundColor(AppColors.textTertiary)
-                        Text("Map View")
-                            .font(AppTypography.callout)
-                            .foregroundColor(AppColors.textSecondary)
+                            .foregroundColor(AppColors.primary)
+                        Image(systemName: "arrowtriangle.down.fill")
+                            .font(.caption)
+                            .foregroundColor(AppColors.primary)
+                            .offset(y: -5)
                     }
-                )
+                }
+            }
+            .frame(height: 200)
+            .cornerRadius(AppSpacing.buttonCornerRadius)
+            .allowsHitTesting(false)
             
             if let address = spot.address {
                 Text(address)
                     .font(AppTypography.body)
                     .foregroundColor(AppColors.textSecondary)
             }
+            
+            // Get Directions Button
+            Button(action: {
+                openInMaps()
+            }) {
+                HStack {
+                    Image(systemName: "arrow.triangle.turn.up.right.circle.fill")
+                    Text("Get Directions")
+                }
+                .font(AppTypography.buttonText)
+                .fontWeight(.medium)
+                .foregroundColor(AppColors.textInverse)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, AppSpacing.md)
+                .background(AppColors.primary)
+                .cornerRadius(AppSpacing.buttonCornerRadius)
+            }
         }
+    }
+    
+    private func openInMaps() {
+        let placemark = MKPlacemark(coordinate: spot.coordinate)
+        let mapItem = MKMapItem(placemark: placemark)
+        mapItem.name = spot.title
+        mapItem.openInMaps(launchOptions: [
+            MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving
+        ])
     }
 }
 

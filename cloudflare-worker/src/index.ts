@@ -3,6 +3,7 @@ import { cors } from 'hono/cors';
 
 interface Env {
   DB: D1Database;
+  IMAGES: R2Bucket;
   APP_SYNC_TOKEN: string;
 }
 
@@ -52,6 +53,79 @@ app.use('/api/*', async (c, next) => {
 });
 
 app.get('/api/health', (c) => c.json({ status: 'ok' }));
+
+// Anonymous User Management
+app.post('/api/users/register', async (c) => {
+  const body = await c.req.json<{ deviceId: string }>();
+  const userId = crypto.randomUUID();
+  const now = new Date().toISOString();
+  
+  try {
+    await c.env.DB.prepare(
+      'INSERT INTO users (id, deviceId, createdAt) VALUES (?1, ?2, ?3)'
+    )
+      .bind(userId, body.deviceId, now)
+      .run();
+    
+    return c.json({ userId, deviceId: body.deviceId, createdAt: now });
+  } catch (error) {
+    // If device ID already exists, return existing user
+    const existing = await c.env.DB.prepare(
+      'SELECT id, deviceId, createdAt FROM users WHERE deviceId = ?1'
+    )
+      .bind(body.deviceId)
+      .first<{ id: string; deviceId: string; createdAt: string }>();
+    
+    if (existing) {
+      return c.json({ userId: existing.id, deviceId: existing.deviceId, createdAt: existing.createdAt });
+    }
+    
+    return c.json({ error: 'Failed to register user' }, 500);
+  }
+});
+
+// Image Upload
+app.post('/api/images/upload', async (c) => {
+  const formData = await c.req.formData();
+  const file = formData.get('image') as File;
+  
+  if (!file) {
+    return c.json({ error: 'No image provided' }, 400);
+  }
+  
+  // Generate unique filename
+  const fileExt = file.name.split('.').pop() || 'jpg';
+  const fileName = `${crypto.randomUUID()}.${fileExt}`;
+  
+  // Upload to R2
+  await c.env.IMAGES.put(fileName, file.stream(), {
+    httpMetadata: {
+      contentType: file.type,
+    },
+  });
+  
+  // Return CDN URL (you'll need to set up a custom domain for R2)
+  const imageUrl = `https://images.hiddengems.app/${fileName}`;
+  
+  return c.json({ url: imageUrl, fileName });
+});
+
+// Get Image (if not using custom domain)
+app.get('/api/images/:fileName', async (c) => {
+  const fileName = c.req.param('fileName');
+  const object = await c.env.IMAGES.get(fileName);
+  
+  if (!object) {
+    return c.json({ error: 'Image not found' }, 404);
+  }
+  
+  const headers = new Headers();
+  object.writeHttpMetadata(headers);
+  headers.set('etag', object.httpEtag);
+  headers.set('cache-control', 'public, max-age=31536000');
+  
+  return new Response(object.body, { headers });
+});
 
 app.post('/api/sync/push', async (c) => {
   const payload = await c.req.json<{

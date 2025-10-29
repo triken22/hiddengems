@@ -117,6 +117,7 @@ struct ClusterMarker: View {
 struct MapBottomSheet: View {
     let spot: Spot?
     let onDismiss: () -> Void
+    @EnvironmentObject private var viewModel: HomeViewModel
     
     @State private var dragOffset: CGFloat = 0
     @State private var isExpanded = false
@@ -173,13 +174,12 @@ struct MapBottomSheet: View {
                     
                     // Action buttons
                     HStack(spacing: AppSpacing.md) {
-                        Button(action: {
-                            // Handle directions
-                        }) {
+                        NavigationLink(destination: SpotDetailView(spot: spot)
+                            .environmentObject(viewModel)) {
                             HStack {
-                                Image(systemName: "location.fill")
+                                Image(systemName: "info.circle.fill")
                                     .font(.caption)
-                                Text("Directions")
+                                Text("View Details")
                                     .appFont(.callout, color: AppColors.primary)
                             }
                             .padding(.horizontal, AppSpacing.lg)
@@ -187,21 +187,7 @@ struct MapBottomSheet: View {
                             .background(AppColors.primary.opacity(0.1))
                             .cornerRadius(AppSpacing.buttonCornerRadius)
                         }
-                        
-                        Button(action: {
-                            // Handle save
-                        }) {
-                            HStack {
-                                Image(systemName: "heart")
-                                    .font(.caption)
-                                Text("Save")
-                                    .appFont(.callout, color: AppColors.primary)
-                            }
-                            .padding(.horizontal, AppSpacing.lg)
-                            .padding(.vertical, AppSpacing.sm)
-                            .background(AppColors.primary.opacity(0.1))
-                            .cornerRadius(AppSpacing.buttonCornerRadius)
-                        }
+                        .buttonStyle(PlainButtonStyle())
                         
                         Spacer()
                     }

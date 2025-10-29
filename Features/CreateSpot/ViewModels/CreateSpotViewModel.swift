@@ -29,12 +29,14 @@ final class CreateSpotViewModel: ObservableObject {
         spotRepository: SpotRepository,
         mediaService: MediaService,
         aiService: HybridAIService,
-        locationService: LocationService
+        locationService: LocationService,
+        initialLocation: CLLocationCoordinate2D? = nil
     ) {
         self.spotRepository = spotRepository
         self.mediaService = mediaService
         self.aiService = aiService
         self.locationService = locationService
+        self.selectedLocation = initialLocation
     }
     
     var previewSpot: Spot? {

@@ -9,3 +9,7 @@ APP_SYNC_TOKEN = "change-me"
 binding = "DB"
 database_name = "hidden_gems"
 database_id = ""
+
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "hidden-gems-images"

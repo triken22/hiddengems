@@ -12,6 +12,10 @@ struct CustomTabBar: View {
                     tab: tab,
                     isSelected: selectedTab.id == tab.id
                 ) {
+                    // Add haptic feedback
+                    let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                    impactFeedback.impactOccurred()
+                    
                     withAnimation(.easeInOut(duration: 0.3)) {
                         selectedTab = tab
                     }
@@ -20,18 +24,11 @@ struct CustomTabBar: View {
             }
         }
         .padding(.horizontal, AppSpacing.sm)
-        .padding(.top, AppSpacing.sm)
-        .padding(.bottom, AppSpacing.lg)
-        .background(
-            Rectangle()
-                .fill(AppColors.surfaceElevated)
-                .shadow(
-                    color: Color.black.opacity(0.1),
-                    radius: 8,
-                    x: 0,
-                    y: -2
-                )
-        )
+        .padding(.top, AppSpacing.md)
+        .padding(.bottom, AppSpacing.sm)
+        .background(AppColors.surfaceElevated)
+        .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: -2)
+        .frame(maxHeight: .infinity, alignment: .bottom)
     }
 }
 
@@ -45,29 +42,34 @@ struct TabBarButton: View {
     
     var body: some View {
         Button(action: action) {
-            VStack(spacing: AppSpacing.xs) {
+            VStack(spacing: 4) {
                 Image(systemName: isSelected ? tab.selectedIcon : tab.icon)
-                    .font(.system(size: 20, weight: .medium))
+                    .font(.system(size: 22, weight: isSelected ? .semibold : .regular))
                     .foregroundColor(iconColor)
-                    .scaleEffect(isPressed ? 0.9 : 1.0)
+                    .scaleEffect(isPressed ? 0.85 : 1.0)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
                 
                 Text(tab.title)
                     .font(AppTypography.tabBarText)
+                    .fontWeight(isSelected ? .semibold : .regular)
                     .foregroundColor(textColor)
                     .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
-            .frame(height: 50)
+            .frame(height: 56)
+            .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
-        .scaleEffect(isPressed ? 0.95 : 1.0)
         .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
-            withAnimation(.easeInOut(duration: 0.1)) {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                 isPressed = pressing
             }
         }, perform: {})
         .accessibilityLabel(tab.title)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityHint(isSelected ? "Currently selected" : "Tap to switch to \(tab.title)")
+        .accessibilityElement(children: .combine)
     }
     
     private var iconColor: Color {
@@ -123,9 +125,13 @@ struct TabBarContainer<Content: View>: View {
             VStack(spacing: 0) {
                 Spacer()
                 CustomTabBar(selectedTab: $selectedTab, tabs: tabs)
+                    .background(AppColors.surfaceElevated)
             }
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
+        .safeAreaInset(edge: .bottom) {
+            Color.clear.frame(height: 0)
+        }
     }
 }
 

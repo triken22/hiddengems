@@ -4,6 +4,7 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject private var viewModel: HomeViewModel
     @State private var showingFilters = false
+    @State private var showingNotifications = false
     @State private var isTabBarHidden = false
     var onNavigateToMap: (() -> Void)? = nil
     
@@ -78,7 +79,8 @@ struct HomeView: View {
                                 spacing: AppSpacing.lg
                             ) {
                                 ForEach(viewModel.filteredSpots) { spot in
-                                    NavigationLink(destination: SpotDetailView(spot: spot)) {
+                                    NavigationLink(destination: SpotDetailView(spot: spot)
+                                        .environmentObject(viewModel)) {
                                         SpotCardView(spot: spot)
                                             .environmentObject(viewModel)
                                     }
@@ -119,7 +121,7 @@ struct HomeView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
-                        // Handle notifications
+                        showingNotifications = true
                     }) {
                         Image(systemName: "bell")
                             .foregroundColor(AppColors.textPrimary)
@@ -131,6 +133,12 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showingFilters) {
             FiltersView()
+        }
+        .sheet(isPresented: $showingNotifications) {
+            Text("Notifications coming soon!")
+                .font(AppTypography.body)
+                .foregroundColor(AppColors.textSecondary)
+                .padding()
         }
         .onAppear {
             viewModel.onAppear()
@@ -188,6 +196,10 @@ struct SpotCardView: View {
                 }
                 .padding(AppSpacing.md)
                 .buttonStyle(PlainButtonStyle())
+                .allowsHitTesting(true)
+                .accessibilityLabel(isSaved ? "Remove from saved" : "Save spot")
+                .accessibilityHint(isSaved ? "Tap to unsave this spot" : "Tap to save this spot")
+                .zIndex(1) // Ensure button is above other content
             }
             .clipped()
             
@@ -198,17 +210,20 @@ struct SpotCardView: View {
                     .fontWeight(.semibold)
                     .foregroundColor(AppColors.textPrimary)
                     .lineLimit(2)
+                    .accessibilityAddTraits(.isHeader)
                 
                 if let subtitle = spot.subtitle, !subtitle.isEmpty {
                     Text(subtitle)
                         .font(AppTypography.cardSubtitle)
                         .foregroundColor(AppColors.textSecondary)
                         .lineLimit(2)
+                        .accessibilityLabel("Subtitle: \(subtitle)")
                 } else if !spot.details.isEmpty {
                     Text(spot.details)
                         .font(AppTypography.cardSubtitle)
                         .foregroundColor(AppColors.textSecondary)
                         .lineLimit(2)
+                        .accessibilityLabel("Description: \(spot.details)")
                 }
                 
                 // Tags row
@@ -223,6 +238,8 @@ struct SpotCardView: View {
                                     .padding(.vertical, 4)
                                     .background(AppColors.primary.opacity(0.12))
                                     .cornerRadius(AppSpacing.pillCornerRadius)
+                                    .accessibilityLabel("Tag: \(tag)")
+                                    .accessibilityAddTraits(.isStaticText)
                             }
                         }
                     }
@@ -240,6 +257,8 @@ struct SpotCardView: View {
                             .fontWeight(.semibold)
                             .foregroundColor(AppColors.textPrimary)
                     }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("Rating 4.8 stars")
                     
                     Spacer()
                     
@@ -252,6 +271,8 @@ struct SpotCardView: View {
                             .font(AppTypography.caption)
                             .foregroundColor(AppColors.textSecondary)
                     }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("Distance 2.4 kilometers")
                 }
             }
             .padding(AppSpacing.md)

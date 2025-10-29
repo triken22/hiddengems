@@ -42,3 +42,19 @@ CREATE TABLE IF NOT EXISTS vectors (
   embedding TEXT NOT NULL,
   updatedAt TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS users (
+  id TEXT PRIMARY KEY,
+  deviceId TEXT UNIQUE NOT NULL,
+  createdAt TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_users_deviceId ON users(deviceId);
+
+CREATE TABLE IF NOT EXISTS device_tokens (
+  userId TEXT NOT NULL,
+  token TEXT NOT NULL,
+  platform TEXT NOT NULL,
+  createdAt TEXT NOT NULL,
+  PRIMARY KEY (userId, token)
+);
+CREATE INDEX IF NOT EXISTS idx_device_tokens_userId ON device_tokens(userId);
