@@ -28,7 +28,8 @@ struct CustomTabBar: View {
         .padding(.bottom, AppSpacing.sm)
         .background(AppColors.surfaceElevated)
         .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: -2)
-        .frame(maxHeight: .infinity, alignment: .bottom)
+        // Removed oversized frame that caused full-screen overlay
+        // .frame(maxHeight: .infinity, alignment: .bottom)
     }
 }
 
@@ -83,7 +84,7 @@ struct TabBarButton: View {
 
 // MARK: - Tab Item Model
 struct TabItem: Identifiable, Equatable {
-    let id = UUID()
+    let id: String // Use stable ID instead of UUID
     let title: String
     let icon: String
     let selectedIcon: String
@@ -94,10 +95,13 @@ struct TabItem: Identifiable, Equatable {
         self.icon = icon
         self.selectedIcon = selectedIcon ?? icon
         self.tag = tag
+        // Use tag as stable ID to preserve tab selection across recreations
+        self.id = "tab_\(tag)"
     }
     
     static func == (lhs: TabItem, rhs: TabItem) -> Bool {
-        lhs.id == rhs.id
+        // Use stable tag-based equality instead of ephemeral UUID
+        lhs.tag == rhs.tag
     }
 }
 
