@@ -14,6 +14,7 @@ struct Spot: Identifiable, Hashable, Codable {
     let groupId: String?
     let userId: String?
     let deleted: Bool
+    let saved: Bool
     let version: Int
     let createdAt: Date
     let updatedAt: Date
@@ -27,7 +28,7 @@ struct Spot: Identifiable, Hashable, Codable {
     }
     
     enum CodingKeys: String, CodingKey {
-        case id, title, subtitle, details, address, tags, topics, images, groupId, userId, deleted, version, createdAt, updatedAt
+        case id, title, subtitle, details, address, tags, topics, images, groupId, userId, deleted, saved, version, createdAt, updatedAt
         case latitude, longitude
     }
     
@@ -43,6 +44,7 @@ struct Spot: Identifiable, Hashable, Codable {
          groupId: String?,
          userId: String?,
          deleted: Bool,
+         saved: Bool = false,
          version: Int,
          createdAt: Date,
          updatedAt: Date) {
@@ -58,6 +60,7 @@ struct Spot: Identifiable, Hashable, Codable {
         self.groupId = groupId
         self.userId = userId
         self.deleted = deleted
+        self.saved = saved
         self.version = version
         self.createdAt = createdAt
         self.updatedAt = updatedAt
@@ -76,6 +79,7 @@ struct Spot: Identifiable, Hashable, Codable {
         groupId = try container.decodeIfPresent(String.self, forKey: .groupId)
         userId = try container.decodeIfPresent(String.self, forKey: .userId)
         deleted = try container.decode(Bool.self, forKey: .deleted)
+        saved = try container.decodeIfPresent(Bool.self, forKey: .saved) ?? false
         version = try container.decode(Int.self, forKey: .version)
         createdAt = try container.decode(Date.self, forKey: .createdAt)
         updatedAt = try container.decode(Date.self, forKey: .updatedAt)
@@ -97,6 +101,7 @@ struct Spot: Identifiable, Hashable, Codable {
         try container.encodeIfPresent(groupId, forKey: .groupId)
         try container.encodeIfPresent(userId, forKey: .userId)
         try container.encode(deleted, forKey: .deleted)
+        try container.encode(saved, forKey: .saved)
         try container.encode(version, forKey: .version)
         try container.encode(createdAt, forKey: .createdAt)
         try container.encode(updatedAt, forKey: .updatedAt)
@@ -109,4 +114,32 @@ struct SpotImage: Hashable, Identifiable, Codable {
     let id: UUID
     let localIdentifier: String?
     let remoteURL: URL?
+    let localImage: UIImage?
+    
+    init(id: UUID, localIdentifier: String? = nil, remoteURL: URL? = nil, localImage: UIImage? = nil) {
+        self.id = id
+        self.localIdentifier = localIdentifier
+        self.remoteURL = remoteURL
+        self.localImage = localImage
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case id, localIdentifier, remoteURL
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        localIdentifier = try container.decodeIfPresent(String.self, forKey: .localIdentifier)
+        remoteURL = try container.decodeIfPresent(URL.self, forKey: .remoteURL)
+        localImage = nil // UIImage is not Codable, so we don't decode it
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encodeIfPresent(localIdentifier, forKey: .localIdentifier)
+        try container.encodeIfPresent(remoteURL, forKey: .remoteURL)
+        // UIImage is not Codable, so we don't encode it
+    }
 }

@@ -107,12 +107,16 @@ struct CameraView: UIViewControllerRepresentable {
 /// Location map view for selecting coordinates
 struct LocationMapView: View {
     @Binding var selectedLocation: CLLocationCoordinate2D?
+    @Binding var selectedAddress: String?
     @Environment(\.dismiss) private var dismiss
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
         span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
     )
     @State private var mapLocation: CLLocationCoordinate2D?
+    @State private var isGettingAddress = false
+    
+    private let locationService = DefaultLocationService()
     
     var body: some View {
         NavigationStack {
@@ -129,6 +133,14 @@ struct LocationMapView: View {
                 .onTapGesture { location in
                     let coordinate = region.center
                     mapLocation = coordinate
+                    selectedLocation = coordinate
+                    getAddressForCoordinate(coordinate)
+                }
+                .onLongPressGesture {
+                    let coordinate = region.center
+                    mapLocation = coordinate
+                    selectedLocation = coordinate
+                    getAddressForCoordinate(coordinate)
                 }
                 
                 VStack {
@@ -153,6 +165,25 @@ struct LocationMapView: View {
                         .padding(.bottom, AppSpacing.lg)
                     }
                 }
+                
+                // Current location button
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button(action: centerOnCurrentLocation) {
+                            Image(systemName: "location.fill")
+                                .font(.title2)
+                                .foregroundColor(AppColors.primary)
+                                .padding(AppSpacing.md)
+                                .background(AppColors.background)
+                                .cornerRadius(AppSpacing.buttonCornerRadius)
+                                .shadow(radius: 2)
+                        }
+                        .padding(.trailing, AppSpacing.lg)
+                        .padding(.top, AppSpacing.lg)
+                    }
+                    Spacer()
+                }
             }
             .navigationTitle("Select Location")
             .navigationBarTitleDisplayMode(.inline)
@@ -161,6 +192,45 @@ struct LocationMapView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                }
+            }
+        }
+        .onAppear {
+            if let location = selectedLocation {
+                mapLocation = location
+                region.center = location
+            }
+        }
+    }
+    
+    private func centerOnCurrentLocation() {
+        Task {
+            if let location = await locationService.currentLocation() {
+                await MainActor.run {
+                    region.center = location.coordinate
+                    mapLocation = location.coordinate
+                    selectedLocation = location.coordinate
+                    getAddressForCoordinate(location.coordinate)
+                }
+            }
+        }
+    }
+    
+    private func getAddressForCoordinate(_ coordinate: CLLocationCoordinate2D) {
+        isGettingAddress = true
+        let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+        let geocoder = CLGeocoder()
+        
+        geocoder.reverseGeocodeLocation(location) { placemarks, error in
+            DispatchQueue.main.async {
+                isGettingAddress = false
+                if let placemark = placemarks?.first {
+                    var addressComponents: [String] = []
+                    if let name = placemark.name { addressComponents.append(name) }
+                    if let locality = placemark.locality { addressComponents.append(locality) }
+                    if let administrativeArea = placemark.administrativeArea { addressComponents.append(administrativeArea) }
+                    
+                    selectedAddress = addressComponents.joined(separator: ", ")
                 }
             }
         }

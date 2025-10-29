@@ -5,12 +5,16 @@ struct HomeView: View {
     @EnvironmentObject private var viewModel: HomeViewModel
     @State private var showingFilters = false
     @State private var isTabBarHidden = false
+    var onNavigateToMap: (() -> Void)? = nil
     
     private let categories = ["All", "Restaurants", "Parks", "Museums", "Beaches", "Mountains", "Coffee", "Shopping"]
     
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
+                AppColors.background
+                    .ignoresSafeArea()
+                
                 ScrollView {
                     LazyVStack(spacing: 0) {
                         // Search Bar
@@ -60,7 +64,7 @@ struct HomeView: View {
                                 actionTitle: viewModel.searchText.isEmpty ? "Explore Map" : "Clear Search"
                             ) {
                                 if viewModel.searchText.isEmpty {
-                                    // Navigate to map
+                                    onNavigateToMap?()
                                 } else {
                                     viewModel.updateSearchText("")
                                 }

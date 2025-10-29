@@ -59,7 +59,7 @@ struct SearchBarView: View {
             RoundedRectangle(cornerRadius: AppSpacing.buttonCornerRadius)
                 .stroke(borderColor, lineWidth: 1)
         )
-        .onChange(of: isFocused) { focused in
+        .onChange(of: isFocused) { _, focused in
             withAnimation(.easeInOut(duration: 0.2)) {
                 isEditing = focused
             }

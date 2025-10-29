@@ -133,10 +133,12 @@ struct PhotoSelectionView: View {
                     .foregroundColor(AppColors.primary)
                 
                 Text("Add Photos")
-                    .appFont(.title2, color: AppColors.textPrimary)
+                    .font(AppTypography.title2)
+                    .foregroundColor(AppColors.textPrimary)
                 
                 Text("Show others what makes this place special")
-                    .appFont(.body, color: AppColors.textSecondary)
+                    .font(AppTypography.body)
+                    .foregroundColor(AppColors.textSecondary)
                     .multilineTextAlignment(.center)
             }
             .padding(.top, AppSpacing.xxl)
@@ -163,7 +165,7 @@ struct PhotoSelectionView: View {
                             Text("Choose from Library")
                         }
                         .font(AppTypography.buttonText)
-                    .foregroundColor(AppColors.primary)
+                        .foregroundColor(AppColors.primary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, AppSpacing.md)
                         .background(AppColors.primary.opacity(0.1))
@@ -172,7 +174,7 @@ struct PhotoSelectionView: View {
                 }
                 .padding(.horizontal, AppSpacing.lg)
             } else {
-                // Selected photos grid
+                // Selected photos grid with reorder support
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: AppSpacing.md) {
                         ForEach(Array(selectedImages.enumerated()), id: \.offset) { index, image in
@@ -185,7 +187,9 @@ struct PhotoSelectionView: View {
                                     .clipped()
                                 
                                 Button(action: {
-                                    selectedImages.remove(at: index)
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        selectedImages.remove(at: index)
+                                    }
                                 }) {
                                     Image(systemName: "xmark.circle.fill")
                                         .font(.title3)
@@ -206,7 +210,8 @@ struct PhotoSelectionView: View {
                                         Image(systemName: "plus")
                                             .font(.title2)
                                         Text("Add More")
-                                            .appFont(.caption, color: AppColors.textSecondary)
+                                            .font(AppTypography.caption)
+                                            .foregroundColor(AppColors.textSecondary)
                                     }
                                 )
                         }
@@ -217,20 +222,19 @@ struct PhotoSelectionView: View {
             
             Spacer()
             
-            // Next button
-            if !selectedImages.isEmpty {
-                Button(action: onNext) {
-                    Text("Continue")
-                        .font(AppTypography.buttonText)
-                        .foregroundColor(AppColors.textInverse)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, AppSpacing.md)
-                        .background(AppColors.primary)
-                        .cornerRadius(AppSpacing.buttonCornerRadius)
-                }
-                .padding(.horizontal, AppSpacing.lg)
-                .padding(.bottom, AppSpacing.lg)
+            // Next button - always visible but disabled when no images
+            Button(action: onNext) {
+                Text("Continue")
+                    .font(AppTypography.buttonText)
+                    .foregroundColor(AppColors.textInverse)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, AppSpacing.md)
+                    .background(selectedImages.isEmpty ? AppColors.border : AppColors.primary)
+                    .cornerRadius(AppSpacing.buttonCornerRadius)
             }
+            .disabled(selectedImages.isEmpty)
+            .padding(.horizontal, AppSpacing.lg)
+            .padding(.bottom, AppSpacing.lg)
         }
         .sheet(isPresented: $showingImagePicker) {
             ImagePicker(selectedImages: $selectedImages)
@@ -240,6 +244,18 @@ struct PhotoSelectionView: View {
                 get: { selectedImages.first },
                 set: { if let image = $0 { selectedImages = [image] } }
             ))
+        }
+        .onChange(of: selectedImages) { _, newImages in
+            // Auto-advance to next step when first photo is selected
+            if !newImages.isEmpty && newImages.count == 1 {
+                // Add haptic feedback
+                let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                impactFeedback.impactOccurred()
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    onNext()
+                }
+            }
         }
     }
 }
@@ -251,95 +267,164 @@ struct SpotDetailsFormView: View {
     @Binding var details: String
     let onNext: () -> Void
     let onPrevious: () -> Void
+    @FocusState private var focusedField: DetailField?
+    
+    enum DetailField {
+        case title, subtitle, details
+    }
+    
+    private var isFormValid: Bool {
+        !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        !details.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.lg) {
-            VStack(alignment: .leading, spacing: AppSpacing.md) {
-                Text("Tell us about this place")
-                    .appFont(.title2, color: AppColors.textPrimary)
-                
-                Text("Help others discover what makes this spot special")
-                    .appFont(.body, color: AppColors.textSecondary)
-            }
-            .padding(.top, AppSpacing.lg)
-            
-            VStack(spacing: AppSpacing.lg) {
-                VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                    Text("Title *")
-                        .appFont(.callout, weight: .semibold, color: AppColors.textPrimary)
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: AppSpacing.lg) {
+                    VStack(alignment: .leading, spacing: AppSpacing.md) {
+                        Text("Tell us about this place")
+                            .font(AppTypography.title2)
+                            .foregroundColor(AppColors.textPrimary)
+                        
+                        Text("Help others discover what makes this spot special")
+                            .font(AppTypography.body)
+                            .foregroundColor(AppColors.textSecondary)
+                    }
+                    .padding(.top, AppSpacing.lg)
                     
-                    TextField("What is this place?", text: $title)
-                        .appFont(.body, color: AppColors.textPrimary)
-                        .padding(AppSpacing.md)
-                        .background(AppColors.surface)
-                        .cornerRadius(AppSpacing.buttonCornerRadius)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: AppSpacing.buttonCornerRadius)
-                                .stroke(AppColors.border, lineWidth: 1)
-                        )
-                }
-                
-                VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                    Text("Subtitle")
-                        .appFont(.callout, weight: .semibold, color: AppColors.textPrimary)
+                    VStack(spacing: AppSpacing.lg) {
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                            Text("Title *")
+                                .font(AppTypography.callout)
+                                .fontWeight(.semibold)
+                                .foregroundColor(AppColors.textPrimary)
+                            
+                            TextField("What is this place?", text: $title)
+                                .focused($focusedField, equals: .title)
+                                .font(AppTypography.body)
+                                .foregroundColor(AppColors.textPrimary)
+                                .padding(AppSpacing.md)
+                                .background(AppColors.surface)
+                                .cornerRadius(AppSpacing.buttonCornerRadius)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: AppSpacing.buttonCornerRadius)
+                                        .stroke(title.isEmpty ? AppColors.error : AppColors.border, lineWidth: 1)
+                                )
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .subtitle
+                                }
+                            
+                            if title.isEmpty {
+                                Text("Title is required")
+                                    .font(AppTypography.caption)
+                                    .foregroundColor(AppColors.error)
+                            }
+                        }
+                        
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                            Text("Subtitle")
+                                .font(AppTypography.callout)
+                                .fontWeight(.semibold)
+                                .foregroundColor(AppColors.textPrimary)
+                            
+                            TextField("A short description", text: $subtitle)
+                                .focused($focusedField, equals: .subtitle)
+                                .font(AppTypography.body)
+                                .foregroundColor(AppColors.textPrimary)
+                                .padding(AppSpacing.md)
+                                .background(AppColors.surface)
+                                .cornerRadius(AppSpacing.buttonCornerRadius)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: AppSpacing.buttonCornerRadius)
+                                        .stroke(AppColors.border, lineWidth: 1)
+                                )
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .details
+                                }
+                        }
+                        
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                            Text("Description *")
+                                .font(AppTypography.callout)
+                                .fontWeight(.semibold)
+                                .foregroundColor(AppColors.textPrimary)
+                            
+                            TextField("Tell us more about this place...", text: $details, axis: .vertical)
+                                .focused($focusedField, equals: .details)
+                                .font(AppTypography.body)
+                                .foregroundColor(AppColors.textPrimary)
+                                .padding(AppSpacing.md)
+                                .background(AppColors.surface)
+                                .cornerRadius(AppSpacing.buttonCornerRadius)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: AppSpacing.buttonCornerRadius)
+                                        .stroke(details.isEmpty ? AppColors.error : AppColors.border, lineWidth: 1)
+                                )
+                                .lineLimit(5...10)
+                                .submitLabel(.done)
+                                .onSubmit {
+                                    focusedField = nil
+                                }
+                            
+                            if details.isEmpty {
+                                Text("Description is required")
+                                    .font(AppTypography.caption)
+                                    .foregroundColor(AppColors.error)
+                            }
+                        }
+                    }
                     
-                    TextField("A short description", text: $subtitle)
-                        .appFont(.body, color: AppColors.textPrimary)
-                        .padding(AppSpacing.md)
-                        .background(AppColors.surface)
-                        .cornerRadius(AppSpacing.buttonCornerRadius)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: AppSpacing.buttonCornerRadius)
-                                .stroke(AppColors.border, lineWidth: 1)
-                        )
+                    Spacer(minLength: 100) // Ensure space for fixed bottom buttons
                 }
-                
-                VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                    Text("Description *")
-                        .appFont(.callout, weight: .semibold, color: AppColors.textPrimary)
-                    
-                    TextField("Tell us more about this place...", text: $details, axis: .vertical)
-                        .appFont(.body, color: AppColors.textPrimary)
-                        .padding(AppSpacing.md)
-                        .background(AppColors.surface)
-                        .cornerRadius(AppSpacing.buttonCornerRadius)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: AppSpacing.buttonCornerRadius)
-                                .stroke(AppColors.border, lineWidth: 1)
-                        )
-                        .lineLimit(5...10)
-                }
+                .padding(.horizontal, AppSpacing.lg)
             }
             
-            Spacer()
-            
-            // Navigation buttons
-            HStack(spacing: AppSpacing.md) {
-                Button(action: onPrevious) {
-                    Text("Back")
-                        .font(AppTypography.buttonText)
-                    .foregroundColor(AppColors.primary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, AppSpacing.md)
-                        .background(AppColors.primary.opacity(0.1))
-                        .cornerRadius(AppSpacing.buttonCornerRadius)
-                }
+            // Fixed bottom navigation buttons
+            VStack(spacing: 0) {
+                Divider()
+                    .background(AppColors.border)
                 
-                Button(action: onNext) {
-                    Text("Continue")
-                        .font(AppTypography.buttonText)
-                        .foregroundColor(AppColors.textInverse)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, AppSpacing.md)
-                        .background(title.isEmpty || details.isEmpty ? AppColors.border : AppColors.primary)
-                        .cornerRadius(AppSpacing.buttonCornerRadius)
+                HStack(spacing: AppSpacing.md) {
+                    Button(action: onPrevious) {
+                        Text("Back")
+                            .font(AppTypography.buttonText)
+                            .foregroundColor(AppColors.primary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, AppSpacing.md)
+                            .background(AppColors.primary.opacity(0.1))
+                            .cornerRadius(AppSpacing.buttonCornerRadius)
+                    }
+                    
+                    Button(action: onNext) {
+                        Text("Continue")
+                            .font(AppTypography.buttonText)
+                            .foregroundColor(AppColors.textInverse)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, AppSpacing.md)
+                            .background(isFormValid ? AppColors.primary : AppColors.border)
+                            .cornerRadius(AppSpacing.buttonCornerRadius)
+                    }
+                    .disabled(!isFormValid)
                 }
-                .disabled(title.isEmpty || details.isEmpty)
+                .padding(.horizontal, AppSpacing.lg)
+                .padding(.vertical, AppSpacing.md)
+                .background(AppColors.background)
             }
-            .padding(.horizontal, AppSpacing.lg)
-            .padding(.bottom, AppSpacing.lg)
         }
-        .padding(.horizontal, AppSpacing.lg)
+        .toolbar {
+            ToolbarItem(placement: .keyboard) {
+                HStack {
+                    Spacer()
+                    Button("Done") {
+                        focusedField = nil
+                    }
+                    .foregroundColor(AppColors.primary)
+                }
+            }
+        }
     }
 }
 
@@ -351,19 +436,48 @@ struct LocationSelectionView: View {
     
     @State private var searchText = ""
     @State private var showingMap = false
+    @State private var isGettingLocation = false
+    @State private var locationError: String?
+    @State private var selectedAddress: String?
+    
+    private let locationService = DefaultLocationService()
     
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.lg) {
             VStack(alignment: .leading, spacing: AppSpacing.md) {
                 Text("Where is this place?")
-                    .appFont(.title2, color: AppColors.textPrimary)
+                    .font(AppTypography.title2)
+                    .foregroundColor(AppColors.textPrimary)
                 
                 Text("Help others find this hidden gem")
-                    .appFont(.body, color: AppColors.textSecondary)
+                    .font(AppTypography.body)
+                    .foregroundColor(AppColors.textSecondary)
             }
             .padding(.top, AppSpacing.lg)
             
             VStack(spacing: AppSpacing.lg) {
+                // Use My Location button
+                Button(action: getCurrentLocation) {
+                    HStack {
+                        if isGettingLocation {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        } else {
+                            Image(systemName: "location.fill")
+                        }
+                        Text(isGettingLocation ? "Getting Location..." : "Use My Location")
+                    }
+                    .font(AppTypography.buttonText)
+                    .foregroundColor(AppColors.textInverse)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, AppSpacing.md)
+                    .background(AppColors.primary)
+                    .cornerRadius(AppSpacing.buttonCornerRadius)
+                }
+                .disabled(isGettingLocation)
+                
+                // Search bar
                 SearchBarView(
                     searchText: $searchText,
                     placeholder: "Search for a location..."
@@ -373,6 +487,7 @@ struct LocationSelectionView: View {
                     // Handle text change
                 }
                 
+                // Map selection button
                 Button(action: { showingMap = true }) {
                     HStack {
                         Image(systemName: "map")
@@ -386,13 +501,31 @@ struct LocationSelectionView: View {
                     .cornerRadius(AppSpacing.buttonCornerRadius)
                 }
                 
+                // Error message
+                if let error = locationError {
+                    Text(error)
+                        .font(AppTypography.caption)
+                        .foregroundColor(AppColors.error)
+                        .multilineTextAlignment(.center)
+                }
+                
+                // Selected location display
                 if let location = selectedLocation {
                     VStack(alignment: .leading, spacing: AppSpacing.sm) {
                         Text("Selected Location")
-                            .appFont(.callout, weight: .semibold, color: AppColors.textPrimary)
+                            .font(AppTypography.callout)
+                            .fontWeight(.semibold)
+                            .foregroundColor(AppColors.textPrimary)
                         
-                        Text("Lat: \(location.latitude, specifier: "%.4f"), Lng: \(location.longitude, specifier: "%.4f")")
-                            .appFont(.caption, color: AppColors.textSecondary)
+                        if let address = selectedAddress {
+                            Text(address)
+                                .font(AppTypography.body)
+                                .foregroundColor(AppColors.textSecondary)
+                        } else {
+                            Text("Lat: \(location.latitude, specifier: "%.4f"), Lng: \(location.longitude, specifier: "%.4f")")
+                                .font(AppTypography.caption)
+                                .foregroundColor(AppColors.textSecondary)
+                        }
                     }
                     .padding(AppSpacing.md)
                     .background(AppColors.surface)
@@ -407,7 +540,7 @@ struct LocationSelectionView: View {
                 Button(action: onPrevious) {
                     Text("Back")
                         .font(AppTypography.buttonText)
-                    .foregroundColor(AppColors.primary)
+                        .foregroundColor(AppColors.primary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, AppSpacing.md)
                         .background(AppColors.primary.opacity(0.1))
@@ -430,7 +563,46 @@ struct LocationSelectionView: View {
         }
         .padding(.horizontal, AppSpacing.lg)
         .sheet(isPresented: $showingMap) {
-            LocationMapView(selectedLocation: $selectedLocation)
+            LocationMapView(selectedLocation: $selectedLocation, selectedAddress: $selectedAddress)
+        }
+    }
+    
+    private func getCurrentLocation() {
+        isGettingLocation = true
+        locationError = nil
+        
+        Task {
+            do {
+                if let location = await locationService.currentLocation() {
+                    await MainActor.run {
+                        selectedLocation = location.coordinate
+                        isGettingLocation = false
+                        // Reverse geocode to get address
+                        reverseGeocode(location: location)
+                    }
+                } else {
+                    await MainActor.run {
+                        locationError = "Unable to get your location. Please check location permissions in Settings."
+                        isGettingLocation = false
+                    }
+                }
+            }
+        }
+    }
+    
+    private func reverseGeocode(location: CLLocation) {
+        let geocoder = CLGeocoder()
+        geocoder.reverseGeocodeLocation(location) { placemarks, error in
+            DispatchQueue.main.async {
+                if let placemark = placemarks?.first {
+                    var addressComponents: [String] = []
+                    if let name = placemark.name { addressComponents.append(name) }
+                    if let locality = placemark.locality { addressComponents.append(locality) }
+                    if let administrativeArea = placemark.administrativeArea { addressComponents.append(administrativeArea) }
+                    
+                    selectedAddress = addressComponents.joined(separator: ", ")
+                }
+            }
         }
     }
 }
@@ -560,37 +732,47 @@ struct SpotPreviewView: View {
     let onSave: () -> Void
     let onPrevious: () -> Void
     let isSaving: Bool
+    @State private var selectedImageIndex = 0
     
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.lg) {
             VStack(alignment: .leading, spacing: AppSpacing.md) {
                 Text("Preview your spot")
-                    .appFont(.title2, color: AppColors.textPrimary)
+                    .font(AppTypography.title2)
+                    .foregroundColor(AppColors.textPrimary)
                 
                 Text("This is how others will see your discovery")
-                    .appFont(.body, color: AppColors.textSecondary)
+                    .font(AppTypography.body)
+                    .foregroundColor(AppColors.textSecondary)
             }
             .padding(.top, AppSpacing.lg)
             
             if let spot = spot {
                 ScrollView {
                     VStack(spacing: AppSpacing.lg) {
-                        // Preview card
-                        SpotCardView(spot: spot)
+                        // Custom preview card with real images
+                        SpotPreviewCard(spot: spot, selectedImageIndex: $selectedImageIndex)
                         
                         // Details
                         VStack(alignment: .leading, spacing: AppSpacing.md) {
                             Text("Details")
-                                .appFont(.headline, color: AppColors.textPrimary)
+                                .font(AppTypography.headline)
+                                .foregroundColor(AppColors.textPrimary)
                             
                             Text(spot.details)
-                                .appFont(.body, color: AppColors.textSecondary)
+                                .font(AppTypography.body)
+                                .foregroundColor(AppColors.textSecondary)
                             
                             if !spot.tags.isEmpty {
-                                HStack {
+                                LazyVGrid(columns: [
+                                    GridItem(.flexible()),
+                                    GridItem(.flexible()),
+                                    GridItem(.flexible())
+                                ], spacing: AppSpacing.sm) {
                                     ForEach(spot.tags, id: \.self) { tag in
                                         Text(tag)
-                                            .appFont(.caption, color: AppColors.primary)
+                                            .font(AppTypography.caption)
+                                            .foregroundColor(AppColors.primary)
                                             .padding(.horizontal, AppSpacing.sm)
                                             .padding(.vertical, AppSpacing.xs)
                                             .background(AppColors.primary.opacity(0.1))
@@ -613,10 +795,12 @@ struct SpotPreviewView: View {
                         .foregroundColor(AppColors.warning)
                     
                     Text("Unable to create preview")
-                        .appFont(.headline, color: AppColors.textPrimary)
+                        .font(AppTypography.headline)
+                        .foregroundColor(AppColors.textPrimary)
                     
                     Text("Please go back and check your information")
-                        .appFont(.body, color: AppColors.textSecondary)
+                        .font(AppTypography.body)
+                        .foregroundColor(AppColors.textSecondary)
                         .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity)
@@ -629,7 +813,7 @@ struct SpotPreviewView: View {
                 Button(action: onPrevious) {
                     Text("Back")
                         .font(AppTypography.buttonText)
-                    .foregroundColor(AppColors.primary)
+                        .foregroundColor(AppColors.primary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, AppSpacing.md)
                         .background(AppColors.primary.opacity(0.1))
@@ -653,11 +837,113 @@ struct SpotPreviewView: View {
                     .cornerRadius(AppSpacing.buttonCornerRadius)
                 }
                 .disabled(spot == nil || isSaving)
+                
+                // Upload progress indicator
+                if isSaving {
+                    VStack(spacing: AppSpacing.sm) {
+                        ProgressView(value: 0.7) // Stub progress
+                            .progressViewStyle(LinearProgressViewStyle(tint: AppColors.primary))
+                            .scaleEffect(x: 1, y: 1.5, anchor: .center)
+                        
+                        Text("Uploading images...")
+                            .font(AppTypography.caption)
+                            .foregroundColor(AppColors.textSecondary)
+                    }
+                    .padding(.horizontal, AppSpacing.lg)
+                }
             }
             .padding(.horizontal, AppSpacing.lg)
             .padding(.bottom, AppSpacing.lg)
         }
         .padding(.horizontal, AppSpacing.lg)
+    }
+}
+
+// MARK: - Spot Preview Card
+struct SpotPreviewCard: View {
+    let spot: Spot
+    @Binding var selectedImageIndex: Int
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Image carousel
+            if !spot.images.isEmpty {
+                TabView(selection: $selectedImageIndex) {
+                    ForEach(Array(spot.images.enumerated()), id: \.offset) { index, spotImage in
+                        if let image = spotImage.localImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(height: 200)
+                                .clipped()
+                                .tag(index)
+                        }
+                    }
+                }
+                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
+                .frame(height: 200)
+            } else {
+                // Placeholder for no images
+                Rectangle()
+                    .fill(AppColors.surface)
+                    .frame(height: 200)
+                    .overlay(
+                        VStack {
+                            Image(systemName: "photo")
+                                .font(.system(size: 48))
+                                .foregroundColor(AppColors.textSecondary)
+                            Text("No images")
+                                .font(AppTypography.body)
+                                .foregroundColor(AppColors.textSecondary)
+                        }
+                    )
+            }
+            
+            // Content
+            VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                Text(spot.title)
+                    .font(AppTypography.cardTitle)
+                    .foregroundColor(AppColors.textPrimary)
+                    .lineLimit(2)
+                
+                if let subtitle = spot.subtitle {
+                    Text(subtitle)
+                        .font(AppTypography.cardSubtitle)
+                        .foregroundColor(AppColors.textSecondary)
+                        .lineLimit(1)
+                }
+                
+                if let address = spot.address {
+                    HStack {
+                        Image(systemName: "location")
+                            .font(.caption)
+                            .foregroundColor(AppColors.textSecondary)
+                        Text(address)
+                            .font(AppTypography.caption)
+                            .foregroundColor(AppColors.textSecondary)
+                            .lineLimit(1)
+                    }
+                }
+                
+                if !spot.topics.isEmpty {
+                    HStack {
+                        ForEach(spot.topics.prefix(2), id: \.self) { topic in
+                            Text(topic)
+                                .font(AppTypography.caption)
+                                .foregroundColor(AppColors.primary)
+                                .padding(.horizontal, AppSpacing.sm)
+                                .padding(.vertical, AppSpacing.xs)
+                                .background(AppColors.primary.opacity(0.1))
+                                .cornerRadius(AppSpacing.pillCornerRadius)
+                        }
+                    }
+                }
+            }
+            .padding(AppSpacing.md)
+        }
+        .background(AppColors.surface)
+        .cornerRadius(AppSpacing.buttonCornerRadius)
+        .shadow(color: AppColors.shadow.opacity(0.1), radius: 4, x: 0, y: 2)
     }
 }
 

@@ -56,7 +56,8 @@ final class CreateSpotViewModel: ObservableObject {
                 SpotImage(
                     id: UUID(),
                     localIdentifier: nil,
-                    remoteURL: nil // Would be populated after upload
+                    remoteURL: nil, // Would be populated after upload
+                    localImage: image // Store the actual UIImage for preview
                 )
             },
             groupId: nil,
@@ -147,11 +148,12 @@ final class CreateSpotViewModel: ObservableObject {
                 for image in selectedImages {
                     if let imageData = image.jpegData(compressionQuality: 0.8) {
                         // In a real app, you would upload to a server
-                        // For now, we'll create a placeholder
+                        // For now, we'll create a placeholder with the local image
                         let spotImage = SpotImage(
                             id: UUID(),
                             localIdentifier: nil,
-                            remoteURL: nil // Would be the uploaded URL
+                            remoteURL: nil, // Would be the uploaded URL
+                            localImage: image // Keep the local image for now
                         )
                         uploadedImages.append(spotImage)
                     }
@@ -181,6 +183,9 @@ final class CreateSpotViewModel: ObservableObject {
                 
                 await MainActor.run {
                     self.isSaving = false
+                    // Success - add haptic feedback
+                    let successFeedback = UINotificationFeedbackGenerator()
+                    successFeedback.notificationOccurred(.success)
                     // Success - would typically dismiss the view or show success message
                 }
                 

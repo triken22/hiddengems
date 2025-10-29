@@ -15,6 +15,7 @@ extension Spot {
         self.groupId = entity.groupId
         self.userId = entity.userId
         self.deleted = entity.isMarkedDeleted
+        self.saved = entity.isSaved
         self.version = Int(entity.version)
         self.createdAt = entity.createdAt ?? Date()
         self.updatedAt = entity.updatedAt ?? Date()
@@ -36,6 +37,7 @@ extension SpotEntity {
         groupId = spot.groupId
         userId = spot.userId
         isMarkedDeleted = spot.deleted
+        isSaved = spot.saved
         version = Int64(spot.version)
         createdAt = spot.createdAt
         updatedAt = spot.updatedAt

@@ -5,9 +5,11 @@ import CoreLocation
 struct SpotDetailView: View {
     let spot: Spot
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var viewModel: HomeViewModel
     @State private var selectedImageIndex = 0
     @State private var scrollOffset: CGFloat = 0
     @State private var isShowingFullScreen = false
+    @State private var isSaved = false
     
     private let imageHeight: CGFloat = 400
     
@@ -34,6 +36,22 @@ struct SpotDetailView: View {
                                 )
                         }
                     )
+                    
+                    // Heart Button
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            toggleSave()
+                        }) {
+                            Image(systemName: isSaved ? "heart.fill" : "heart")
+                                .font(.system(size: 20, weight: .medium))
+                                .foregroundColor(isSaved ? .red : .white)
+                                .frame(width: 44, height: 44)
+                                .background(Circle().fill(Color.black.opacity(0.3)))
+                        }
+                        .padding(.trailing, AppSpacing.lg)
+                    }
+                    .padding(.top, -AppSpacing.xl)
                     
                     // Content
                     VStack(alignment: .leading, spacing: AppSpacing.lg) {
@@ -69,6 +87,43 @@ struct SpotDetailView: View {
         }
         .navigationBarHidden(true)
         .statusBarHidden(false)
+        .onAppear {
+            isSaved = spot.saved
+        }
+    }
+    
+    private func toggleSave() {
+        Task {
+            // Create updated spot with toggled saved state
+            let updatedSpot = Spot(
+                id: spot.id,
+                title: spot.title,
+                subtitle: spot.subtitle,
+                details: spot.details,
+                coordinate: spot.coordinate,
+                address: spot.address,
+                tags: spot.tags,
+                topics: spot.topics,
+                images: spot.images,
+                groupId: spot.groupId,
+                userId: spot.userId,
+                deleted: spot.deleted,
+                saved: !spot.saved,
+                version: spot.version + 1,
+                createdAt: spot.createdAt,
+                updatedAt: Date()
+            )
+            
+            do {
+                try await viewModel.spotRepository.save(spot: updatedSpot)
+                await MainActor.run {
+                    isSaved = updatedSpot.saved
+                }
+            } catch {
+                // Handle error
+                print("Error saving spot: \(error)")
+            }
+        }
     }
 }
 
@@ -124,24 +179,6 @@ struct PhotoGalleryView: View {
                 .padding(.bottom, AppSpacing.lg)
             }
             
-            // Heart Button
-            VStack {
-                HStack {
-                    Spacer()
-                    Button(action: {
-                        // Handle save
-                    }) {
-                        Image(systemName: "heart")
-                            .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(.white)
-                            .frame(width: 44, height: 44)
-                            .background(Circle().fill(Color.black.opacity(0.3)))
-                    }
-                    .padding(.trailing, AppSpacing.lg)
-                }
-                Spacer()
-            }
-            .padding(.top, AppSpacing.lg)
         }
     }
 }

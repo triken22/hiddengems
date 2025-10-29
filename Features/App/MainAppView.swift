@@ -25,13 +25,17 @@ struct MainAppView: View {
         TabBarContainer(selectedTab: $selectedTab, tabs: tabs) { tab in
             switch tab.tag {
             case 0:
-                HomeView()
+                HomeView(onNavigateToMap: {
+                    selectedTab = TabItem(title: "Map", icon: "map", selectedIcon: "map.fill", tag: 1)
+                })
                     .environmentObject(homeViewModel)
             case 1:
                 ExploreMapView()
                     .environmentObject(homeViewModel)
             case 2:
-                SavedView()
+                SavedView(onNavigateToExplore: {
+                    selectedTab = TabItem(title: "Explore", icon: "house", selectedIcon: "house.fill", tag: 0)
+                })
                     .environmentObject(homeViewModel)
             case 3:
                 ProfileView()
@@ -42,6 +46,7 @@ struct MainAppView: View {
             }
         }
         .withAppTheme()
+        .preferredColorScheme(.light)
     }
 }
 
@@ -50,6 +55,8 @@ struct ExploreMapView: View {
     @EnvironmentObject private var viewModel: HomeViewModel
     @State private var selectedSpot: Spot? = nil
     @State private var showingBottomSheet = false
+    @State private var showingAddLocation = false
+    @State private var selectedCoordinate: CLLocationCoordinate2D? = nil
     
     var body: some View {
         NavigationStack {
@@ -71,12 +78,22 @@ struct ExploreMapView: View {
                 .task {
                     await viewModel.centerOnUser()
                 }
-                .onTapGesture {
+                .onTapGesture { location in
                     withAnimation(.spring()) {
                         selectedSpot = nil
                         showingBottomSheet = false
                     }
                 }
+                .gesture(
+                    LongPressGesture(minimumDuration: 0.5)
+                        .onEnded { _ in
+                            // For now, use region center - in a real implementation,
+                            // you'd convert the tap location to coordinates
+                            let coordinate = viewModel.region.center
+                            selectedCoordinate = coordinate
+                            showingAddLocation = true
+                        }
+                )
                 
                 // Floating Action Button
                 VStack {
@@ -119,6 +136,23 @@ struct ExploreMapView: View {
                 }
             }
         }
+        .sheet(isPresented: $showingAddLocation) {
+            if let coordinate = selectedCoordinate {
+                NavigationStack {
+                    QuickAddView(viewModel: viewModel.quickAddViewModel())
+                        .navigationTitle("Add at \(coordinate.latitude, specifier: "%.4f"), \(coordinate.longitude, specifier: "%.4f")")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                Button("Done") {
+                                    showingAddLocation = false
+                                    selectedCoordinate = nil
+                                }
+                            }
+                        }
+                }
+            }
+        }
     }
 }
 
@@ -126,18 +160,23 @@ struct ExploreMapView: View {
 // MARK: - Saved View
 struct SavedView: View {
     @EnvironmentObject private var viewModel: HomeViewModel
+    var onNavigateToExplore: (() -> Void)? = nil
+    
+    private var savedSpots: [Spot] {
+        viewModel.spots.filter { $0.saved && !$0.deleted }
+    }
     
     var body: some View {
         NavigationStack {
             VStack {
-                if viewModel.spots.isEmpty {
+                if savedSpots.isEmpty {
                     EmptyStateView(
                         icon: "heart",
                         title: "No saved spots",
                         message: "Start exploring and save spots you love",
                         actionTitle: "Explore"
                     ) {
-                        // Navigate to explore
+                        onNavigateToExplore?()
                     }
                 } else {
                     LazyVGrid(
@@ -147,7 +186,7 @@ struct SavedView: View {
                         ],
                         spacing: AppSpacing.lg
                     ) {
-                        ForEach(viewModel.spots) { spot in
+                        ForEach(savedSpots) { spot in
                             NavigationLink(destination: SpotDetailView(spot: spot)) {
                                 SpotCardView(spot: spot)
                             }

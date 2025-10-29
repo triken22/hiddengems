@@ -14,6 +14,7 @@
         <attribute name="groupId" optional="YES" attributeType="String"/>
         <attribute name="userId" optional="YES" attributeType="String"/>
         <attribute name="isMarkedDeleted" optional="NO" attributeType="Boolean" defaultValueString="0"/>
+        <attribute name="isSaved" optional="NO" attributeType="Boolean" defaultValueString="0"/>
         <attribute name="version" optional="NO" attributeType="Integer 64" defaultValueString="0"/>
         <attribute name="createdAt" optional="YES" attributeType="Date"/>
         <attribute name="updatedAt" optional="YES" attributeType="Date"/>
