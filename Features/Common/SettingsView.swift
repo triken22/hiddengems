@@ -8,7 +8,9 @@ struct SettingsView: View {
             Form {
                 Section("Synchronization") {
                     Toggle("Background Sync", isOn: $viewModel.isBackgroundSyncEnabled)
-                        .onChange(of: viewModel.isBackgroundSyncEnabled) { _ in viewModel.persist() }
+                        .onChange(of: viewModel.isBackgroundSyncEnabled) {
+                            viewModel.persist()
+                        }
                     Button("Sync Now") {
                         Task { await viewModel.syncNow() }
                     }
@@ -20,7 +22,9 @@ struct SettingsView: View {
                             Text(provider.displayName).tag(provider)
                         }
                     }
-                    .onChange(of: viewModel.selectedAIProvider) { _ in viewModel.persist() }
+                    .onChange(of: viewModel.selectedAIProvider) {
+                        viewModel.persist()
+                    }
                 }
             }
             .navigationTitle("Settings")

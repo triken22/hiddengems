@@ -12,10 +12,14 @@ final class HomeViewModel: ObservableObject {
     
     @Published var spots: [Spot] = []
     @Published var mapSpots: [Spot] = []
+    @Published var filteredSpots: [Spot] = []
     @Published var selectedSpot: Spot?
     @Published var selectedTab: Tab = .map
     @Published var region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194), span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05))
     @Published var isQuickAddPresented = false
+    @Published var searchText = ""
+    @Published var selectedCategory: String? = nil
+    @Published var isLoading = false
 
     let groupListViewModel: GroupListViewModel
     let settingsViewModel: SettingsViewModel
@@ -51,11 +55,48 @@ final class HomeViewModel: ObservableObject {
     }
 
     func loadSpots() async {
+        isLoading = true
         let spots = await spotRepository.fetchAll()
         await MainActor.run {
             self.spots = spots
             self.mapSpots = spots.filter { !$0.deleted }
+            self.filteredSpots = spots.filter { !$0.deleted }
+            self.isLoading = false
         }
+    }
+    
+    func filterSpots() {
+        var filtered = spots.filter { !$0.deleted }
+        
+        // Filter by search text
+        if !searchText.isEmpty {
+            filtered = filtered.filter { spot in
+                spot.title.localizedCaseInsensitiveContains(searchText) ||
+                spot.subtitle?.localizedCaseInsensitiveContains(searchText) == true ||
+                spot.details.localizedCaseInsensitiveContains(searchText) ||
+                spot.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
+            }
+        }
+        
+        // Filter by category
+        if let category = selectedCategory, category != "All" {
+            filtered = filtered.filter { spot in
+                spot.tags.contains { $0.localizedCaseInsensitiveContains(category) } ||
+                spot.topics.contains { $0.localizedCaseInsensitiveContains(category) }
+            }
+        }
+        
+        filteredSpots = filtered
+    }
+    
+    func updateSearchText(_ text: String) {
+        searchText = text
+        filterSpots()
+    }
+    
+    func updateSelectedCategory(_ category: String?) {
+        selectedCategory = category
+        filterSpots()
     }
 
     func centerOnUser() async {
@@ -88,6 +129,13 @@ final class HomeViewModel: ObservableObject {
                          mediaService: mediaService,
                          aiService: aiService,
                          locationService: locationService)
+    }
+    
+    func createSpotViewModel() -> CreateSpotViewModel {
+        CreateSpotViewModel(spotRepository: spotRepository,
+                           mediaService: mediaService,
+                           aiService: aiService,
+                           locationService: locationService)
     }
     
     func onAppear() {

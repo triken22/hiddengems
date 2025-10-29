@@ -6,13 +6,14 @@ struct HomeMapView: View {
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            Map(coordinateRegion: $viewModel.region,
-                annotationItems: viewModel.mapSpots) { spot in
-                MapAnnotation(coordinate: spot.coordinate) {
-                    SpotAnnotationView(spot: spot)
-                        .onTapGesture {
-                            viewModel.selectedSpot = spot
-                        }
+            Map(position: .constant(.region(viewModel.region))) {
+                ForEach(viewModel.mapSpots) { spot in
+                    Annotation(spot.title, coordinate: spot.coordinate) {
+                        SpotAnnotationView(spot: spot)
+                            .onTapGesture {
+                                viewModel.selectedSpot = spot
+                            }
+                    }
                 }
             }
             .task {

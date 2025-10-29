@@ -6,7 +6,7 @@ struct HiddenGemsApp: App {
 
     var body: some Scene {
         WindowGroup {
-            HomeTabView()
+            MainAppView()
                 .environmentObject(environment.homeViewModel)
                 .environmentObject(environment.groupListViewModel)
                 .environmentObject(environment.settingsViewModel)
