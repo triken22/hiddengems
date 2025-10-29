@@ -18,8 +18,13 @@ final class SQLiteVectorStore: VectorStore {
         let url: URL
 
         static var defaultStore: Location {
-            let url = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-            return Location(url: url.appendingPathComponent("vector_store.sqlite"))
+            if let url = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first {
+                return Location(url: url.appendingPathComponent("vector_store.sqlite"))
+            } else {
+                // Fallback to temporary directory to avoid crashes in rare sandbox cases
+                let url = FileManager.default.temporaryDirectory
+                return Location(url: url.appendingPathComponent("vector_store.sqlite"))
+            }
         }
     }
 

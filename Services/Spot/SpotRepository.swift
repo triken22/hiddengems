@@ -44,6 +44,11 @@ actor SpotRepository {
     }
 
     func save(spot: Spot) async throws {
+        // Generate and persist embedding first to avoid publishing inconsistent state
+        if let embedding = try await aiService.embedding(for: spot) {
+            try vectorStore.upsert(embedding: embedding, for: spot.id)
+        }
+        
         try await context.perform {
             let fetch: NSFetchRequest<SpotEntity> = SpotEntity.fetchRequest()
             fetch.predicate = NSPredicate(format: "id == %@", spot.id)
@@ -51,9 +56,6 @@ actor SpotRepository {
             entity.update(from: spot, context: self.context)
             try self.context.save()
             self.subject.send((self.subject.value.filter { $0.id != spot.id } + [spot]).sorted { $0.updatedAt > $1.updatedAt })
-        }
-        if let embedding = try await aiService.embedding(for: spot) {
-            try vectorStore.upsert(embedding: embedding, for: spot.id)
         }
     }
 

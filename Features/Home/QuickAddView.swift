@@ -3,6 +3,7 @@ import SwiftUI
 struct QuickAddView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: QuickAddViewModel
+    @State private var presentedError: ErrorMessage?
 
     private let columns = [GridItem(.adaptive(minimum: 80), spacing: 12)]
 
@@ -49,8 +50,8 @@ struct QuickAddView: View {
                     } else {
                         Button("Save") {
                             Task {
-                                await viewModel.save()
-                                dismiss()
+                                let success = await viewModel.save()
+                                if success { dismiss() }
                             }
                         }
                     }
@@ -58,7 +59,10 @@ struct QuickAddView: View {
             }
             .navigationTitle("Quick Add")
         }
-        .alert(item: Binding.constant(viewModel.errorMessage.map { ErrorMessage(message: $0) })) { message in
+        .onChange(of: viewModel.errorMessage) { _, newValue in
+            presentedError = newValue.map { ErrorMessage(message: $0) }
+        }
+        .alert(item: $presentedError) { message in
             Alert(title: Text("Error"), message: Text(message.message))
         }
     }

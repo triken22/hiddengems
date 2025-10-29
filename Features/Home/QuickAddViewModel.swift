@@ -51,10 +51,10 @@ final class QuickAddViewModel: ObservableObject {
         }
     }
 
-    func save() async {
+    func save() async -> Bool {
         guard let coordinate = selectedLocation else {
             errorMessage = "Location required"
-            return
+            return false
         }
 
         isSaving = true
@@ -75,9 +75,12 @@ final class QuickAddViewModel: ObservableObject {
                             createdAt: Date(),
                             updatedAt: Date())
             try await spotRepository.save(spot: spot)
+            isSaving = false
+            return true
         } catch {
             errorMessage = error.localizedDescription
+            isSaving = false
+            return false
         }
-        isSaving = false
     }
 }

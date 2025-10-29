@@ -17,7 +17,19 @@ final class AppEnvironment {
         let persistenceController = PersistenceController.shared
         let context = persistenceController.container.viewContext
         
-        let vectorStore = try! SQLiteVectorStore(location: .defaultStore)
+        // Initialize vector store safely (no force-unwraps)
+        let vectorStore: SQLiteVectorStore
+        if let store = try? SQLiteVectorStore(location: .defaultStore) {
+            vectorStore = store
+        } else if let inMemory = try? SQLiteVectorStore.inMemory() {
+            vectorStore = inMemory
+        } else {
+            // As a last resort, create a temp file store
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("vector_store.sqlite")
+            vectorStore = (try? SQLiteVectorStore(location: .init(url: tempURL))) ?? {
+                fatalError("Failed to initialize VectorStore")
+            }()
+        }
         let aiConfig = HybridAIConfiguration(openAIKey: nil, groqKey: nil, embeddingDimension: 1536)
         self.aiService = HybridAIService(configuration: aiConfig)
         
