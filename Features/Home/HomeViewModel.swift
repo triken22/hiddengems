@@ -1,15 +1,20 @@
 import Foundation
-import Combine
 import MapKit
+import CoreLocation
 
 @MainActor
 final class HomeViewModel: ObservableObject {
-    enum Tab: Hashable { case map, groups, settings }
-
-    @Published var selectedTab: Tab = .map
+    enum Tab {
+        case map
+        case groups
+        case settings
+    }
+    
+    @Published var spots: [Spot] = []
     @Published var mapSpots: [Spot] = []
     @Published var selectedSpot: Spot?
-    @Published var cameraPosition: MapCameraPosition = .automatic
+    @Published var selectedTab: Tab = .map
+    @Published var region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194), span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05))
     @Published var isQuickAddPresented = false
 
     let groupListViewModel: GroupListViewModel
@@ -23,61 +28,71 @@ final class HomeViewModel: ObservableObject {
     private let mediaService: MediaService
     private let aiService: HybridAIService
 
-    private var cancellables: Set<AnyCancellable> = []
-
-    init(spots: SpotRepository,
-         groups: GroupRepository,
+    init(spotRepository: SpotRepository,
+         groupRepository: GroupRepository,
          locationService: LocationService,
          syncCoordinator: SyncCoordinator,
          mediaService: MediaService,
-         aiService: HybridAIService) {
-        self.spotRepository = spots
-        self.groupRepository = groups
+         aiService: HybridAIService,
+         groupListViewModel: GroupListViewModel,
+         settingsViewModel: SettingsViewModel) {
+        self.spotRepository = spotRepository
+        self.groupRepository = groupRepository
         self.locationService = locationService
         self.syncCoordinator = syncCoordinator
         self.mediaService = mediaService
         self.aiService = aiService
-        self.groupListViewModel = GroupListViewModel(groupRepository: groups,
-                                                     syncCoordinator: syncCoordinator)
-        self.settingsViewModel = SettingsViewModel()
-        observeSpots()
-    }
+        self.groupListViewModel = groupListViewModel
+        self.settingsViewModel = settingsViewModel
 
-    func onAppear() {
         Task {
-            await syncCoordinator.performInitialSync()
+            await loadSpots()
         }
     }
 
-    func observeSpots() {
-        spotRepository.spotsPublisher()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] spots in
-                self?.mapSpots = spots
-            }
-            .store(in: &cancellables)
+    func loadSpots() async {
+        let spots = await spotRepository.fetchAll()
+        await MainActor.run {
+            self.spots = spots
+            self.mapSpots = spots.filter { !$0.deleted }
+        }
     }
 
     func centerOnUser() async {
         if let location = await locationService.currentLocation() {
-            cameraPosition = .region(MKCoordinateRegion(center: location.coordinate,
-                                                        span: MKCoordinateSpan(latitudeDelta: 0.05,
-                                                                                 longitudeDelta: 0.05)))
+            region = MKCoordinateRegion(center: location.coordinate,
+                                        span: MKCoordinateSpan(latitudeDelta: 0.05,
+                                                             longitudeDelta: 0.05))
         }
     }
 
-    func quickAddViewModel() -> QuickAddViewModel {
-        QuickAddViewModel(spotRepository: spotRepository,
-                          mediaService: mediaService,
-                          aiService: aiService,
-                          locationService: locationService)
+    func selectSpot(_ spot: Spot) {
+        selectedSpot = spot
     }
 
+    func deleteSpot(_ spot: Spot) async {
+        do {
+            try await spotRepository.delete(id: spot.id)
+            await loadSpots()
+        } catch {
+            print("Error deleting spot: \(error)")
+        }
+    }
+    
     func openQuickAdd() {
         isQuickAddPresented = true
     }
-
-    func dismissQuickAdd() {
-        isQuickAddPresented = false
+    
+    func quickAddViewModel() -> QuickAddViewModel {
+        QuickAddViewModel(spotRepository: spotRepository,
+                         mediaService: mediaService,
+                         aiService: aiService,
+                         locationService: locationService)
+    }
+    
+    func onAppear() {
+        Task {
+            await loadSpots()
+        }
     }
 }

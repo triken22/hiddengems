@@ -13,7 +13,7 @@
         <attribute name="images" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData"/>
         <attribute name="groupId" optional="YES" attributeType="String"/>
         <attribute name="userId" optional="YES" attributeType="String"/>
-        <attribute name="deleted" optional="NO" attributeType="Boolean" defaultValueString="0"/>
+        <attribute name="isMarkedDeleted" optional="NO" attributeType="Boolean" defaultValueString="0"/>
         <attribute name="version" optional="NO" attributeType="Integer 64" defaultValueString="0"/>
         <attribute name="createdAt" optional="YES" attributeType="Date"/>
         <attribute name="updatedAt" optional="YES" attributeType="Date"/>
@@ -28,7 +28,7 @@
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="inviteCode" optional="YES" attributeType="String"/>
         <attribute name="memberCount" optional="NO" attributeType="Integer 32" defaultValueString="0"/>
-        <attribute name="deleted" optional="NO" attributeType="Boolean" defaultValueString="0"/>
+        <attribute name="isMarkedDeleted" optional="NO" attributeType="Boolean" defaultValueString="0"/>
         <attribute name="version" optional="NO" attributeType="Integer 64" defaultValueString="0"/>
         <attribute name="createdAt" optional="YES" attributeType="Date"/>
         <attribute name="updatedAt" optional="YES" attributeType="Date"/>

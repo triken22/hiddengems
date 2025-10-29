@@ -14,3 +14,6 @@ wrangler.toml.local
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+build/
+*.xcworkspace
+DerivedData/

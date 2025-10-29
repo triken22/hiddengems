@@ -14,7 +14,7 @@ extension Spot {
         self.images = entity.imagesArray
         self.groupId = entity.groupId
         self.userId = entity.userId
-        self.deleted = entity.deleted
+        self.deleted = entity.isMarkedDeleted
         self.version = Int(entity.version)
         self.createdAt = entity.createdAt ?? Date()
         self.updatedAt = entity.updatedAt ?? Date()
@@ -30,20 +30,20 @@ extension SpotEntity {
         latitude = spot.coordinate.latitude
         longitude = spot.coordinate.longitude
         address = spot.address
-        tags = spot.tags.jsonData
-        topics = spot.topics.jsonData
-        images = spot.images.jsonData
+        tags = spot.tags.jsonData as NSObject?
+        topics = spot.topics.jsonData as NSObject?
+        images = spot.images.jsonData as NSObject?
         groupId = spot.groupId
         userId = spot.userId
-        deleted = spot.deleted
+        isMarkedDeleted = spot.deleted
         version = Int64(spot.version)
         createdAt = spot.createdAt
         updatedAt = spot.updatedAt
     }
 
-    var tagsArray: [String] { (tags?.decodeJSON() ?? []) }
-    var topicsArray: [String] { (topics?.decodeJSON() ?? []) }
-    var imagesArray: [SpotImage] { (images?.decodeJSON() ?? []) }
+    var tagsArray: [String] { ((tags as? Data)?.decodeJSON() ?? []) }
+    var topicsArray: [String] { ((topics as? Data)?.decodeJSON() ?? []) }
+    var imagesArray: [SpotImage] { ((images as? Data)?.decodeJSON() ?? []) }
 }
 
 private extension Array where Element == String {

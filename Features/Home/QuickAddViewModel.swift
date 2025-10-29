@@ -6,7 +6,7 @@ import PhotosUI
 final class QuickAddViewModel: ObservableObject {
     @Published var title: String = ""
     @Published var details: String = ""
-    @Published var selectedAssets: [PhotosPickerItem] = []
+    @Published var selectedAssets: [String] = []
     @Published var selectedLocation: CLLocationCoordinate2D?
     @Published var suggestedTags: [String] = []
     @Published var isSaving = false
@@ -37,7 +37,7 @@ final class QuickAddViewModel: ObservableObject {
     func analyzeMediaIfNeeded() async {
         guard !selectedAssets.isEmpty else { return }
         do {
-            let media = try await mediaService.loadMediaItems(from: selectedAssets)
+            let media = try await mediaService.loadMediaItems()
             let result = try await aiService.suggestMetadata(for: media,
                                                              title: title,
                                                              coordinate: selectedLocation)

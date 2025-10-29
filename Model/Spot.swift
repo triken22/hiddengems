@@ -2,27 +2,35 @@ import Foundation
 import CoreLocation
 
 struct Spot: Identifiable, Hashable, Codable {
-    var id: String
-    var title: String
-    var subtitle: String?
-    var details: String
-    var coordinate: CLLocationCoordinate2D
-    var address: String?
-    var tags: [String]
-    var topics: [String]
-    var images: [SpotImage]
-    var groupId: String?
-    var userId: String?
-    var deleted: Bool
-    var version: Int
-    var createdAt: Date
-    var updatedAt: Date
-
+    let id: String
+    let title: String
+    let subtitle: String?
+    let details: String
+    let coordinate: CLLocationCoordinate2D
+    let address: String?
+    let tags: [String]
+    let topics: [String]
+    let images: [SpotImage]
+    let groupId: String?
+    let userId: String?
+    let deleted: Bool
+    let version: Int
+    let createdAt: Date
+    let updatedAt: Date
+    
+    static func == (lhs: Spot, rhs: Spot) -> Bool {
+        lhs.id == rhs.id
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+    
     enum CodingKeys: String, CodingKey {
         case id, title, subtitle, details, address, tags, topics, images, groupId, userId, deleted, version, createdAt, updatedAt
         case latitude, longitude
     }
-
+    
     init(id: String,
          title: String,
          subtitle: String?,
@@ -54,7 +62,7 @@ struct Spot: Identifiable, Hashable, Codable {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
-
+    
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(String.self, forKey: .id)
@@ -75,7 +83,7 @@ struct Spot: Identifiable, Hashable, Codable {
         let longitude = try container.decode(Double.self, forKey: .longitude)
         coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
-
+    
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
@@ -98,7 +106,7 @@ struct Spot: Identifiable, Hashable, Codable {
 }
 
 struct SpotImage: Hashable, Identifiable, Codable {
-    var id: UUID
-    var localIdentifier: String?
-    var remoteURL: URL?
+    let id: UUID
+    let localIdentifier: String?
+    let remoteURL: URL?
 }

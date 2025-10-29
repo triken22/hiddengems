@@ -19,7 +19,7 @@ actor SpotRepository {
 
     private func loadInitialSpots() async {
         let request: NSFetchRequest<SpotEntity> = SpotEntity.fetchRequest()
-        request.predicate = NSPredicate(format: "deleted == NO")
+        request.predicate = NSPredicate(format: "isMarkedDeleted == NO")
         do {
             let entities = try context.fetch(request)
             subject.send(entities.map(Spot.init(entity:)))
@@ -30,6 +30,17 @@ actor SpotRepository {
 
     nonisolated func spotsPublisher() -> AnyPublisher<[Spot], Never> {
         subject.eraseToAnyPublisher()
+    }
+
+    func fetchAll() async -> [Spot] {
+        let request: NSFetchRequest<SpotEntity> = SpotEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "isMarkedDeleted == NO")
+        do {
+            let entities = try context.performAndWait { try context.fetch(request) }
+            return entities.map(Spot.init(entity:))
+        } catch {
+            return []
+        }
     }
 
     func save(spot: Spot) async throws {
@@ -51,7 +62,7 @@ actor SpotRepository {
             let fetch: NSFetchRequest<SpotEntity> = SpotEntity.fetchRequest()
             fetch.predicate = NSPredicate(format: "id == %@", id)
             guard let entity = try self.context.fetch(fetch).first else { return }
-            entity.deleted = true
+            entity.isMarkedDeleted = true
             entity.updatedAt = Date()
             try self.context.save()
             self.subject.send(self.subject.value.filter { $0.id != id })

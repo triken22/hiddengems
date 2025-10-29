@@ -16,7 +16,7 @@ final class DefaultLocationService: NSObject, LocationService, CLLocationManager
     }
 
     func currentLocation() async -> CLLocation? {
-        if CLLocationManager.authorizationStatus() == .notDetermined {
+        if manager.authorizationStatus == .notDetermined {
             manager.requestWhenInUseAuthorization()
         }
         manager.startUpdatingLocation()

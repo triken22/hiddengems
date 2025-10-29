@@ -1,5 +1,4 @@
 import SwiftUI
-import PhotosUI
 
 struct QuickAddView: View {
     @Environment(\.dismiss) private var dismiss
@@ -20,14 +19,8 @@ struct QuickAddView: View {
                 }
 
                 Section("Photos") {
-                    PhotosPicker(selection: $viewModel.selectedAssets, matching: .images) {
-                        Label("Choose Photos", systemImage: "photo.on.rectangle")
-                    }
-                    if !viewModel.selectedAssets.isEmpty {
-                        Button("Analyze with AI") {
-                            Task { await viewModel.analyzeMediaIfNeeded() }
-                        }
-                    }
+                    Label("Photo picker temporarily disabled", systemImage: "photo.on.rectangle")
+                        .foregroundColor(.secondary)
                 }
 
                 Section("Suggested Tags") {

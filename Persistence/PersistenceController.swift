@@ -1,6 +1,9 @@
 import CoreData
 
 final class PersistenceController {
+    static let shared = PersistenceController(inMemory: false, modelName: "HiddenGems")
+    static let preview = PersistenceController(inMemory: true, modelName: "HiddenGems")
+    
     let container: NSPersistentContainer
 
     init(inMemory: Bool = false, modelName: String) {

@@ -56,12 +56,10 @@ final class SQLiteVectorStore: VectorStore {
         }
         defer { sqlite3_finalize(statement) }
 
-        (spotId as NSString).utf8String?.withMemoryRebound(to: Int8.self, capacity: spotId.utf8.count + 1) { pointer in
-            sqlite3_bind_text(statement, 1, pointer, -1, SQLITE_TRANSIENT)
-        }
-        var copy = embedding
-        copy.withUnsafeBytes { bytes in
-            sqlite3_bind_blob(statement, 2, bytes.baseAddress, Int32(bytes.count), SQLITE_TRANSIENT)
+        sqlite3_bind_text(statement, 1, (spotId as NSString).utf8String, -1, SQLITE_TRANSIENT)
+        embedding.withUnsafeBufferPointer { buffer in
+            let byteCount = Int32(buffer.count * MemoryLayout<Float>.size)
+            sqlite3_bind_blob(statement, 2, buffer.baseAddress, byteCount, SQLITE_TRANSIENT)
         }
         sqlite3_bind_double(statement, 3, Date().timeIntervalSince1970)
 

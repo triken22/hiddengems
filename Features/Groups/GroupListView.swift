@@ -45,7 +45,7 @@ struct GroupListView: View {
                 Alert(title: Text("Error"), message: Text(message.message))
             }
         }
-        .onChange(of: viewModel.errorMessage) { error in
+        .onChange(of: viewModel.errorMessage) { _, error in
             if let error = error {
                 presentedError = ErrorMessage(message: error)
             }
