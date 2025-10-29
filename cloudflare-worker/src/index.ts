@@ -20,6 +20,8 @@ type SpotRow = {
   imageRemoteURLs: string | null;
   groupId: string | null;
   userId: string | null;
+  globalRating: number;
+  ratingUpdatedAt: string | null;
   createdAt: string;
   updatedAt: string;
   version: number;
@@ -38,7 +40,23 @@ type GroupRow = {
 };
 
 const app = new Hono<{ Bindings: Env }>();
-app.use('*', cors());
+
+// Configure CORS with specific origins (update with your actual domains)
+app.use('*', cors({
+  origin: (origin) => {
+    // Allow localhost for development and your production domains
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'https://hiddengems.app',
+      'https://www.hiddengems.app',
+      'https://api.hiddengems.app'
+    ];
+    return allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+  },
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization'],
+  maxAge: 86400,
+}));
 
 app.use('/api/*', async (c, next) => {
   const header = c.req.header('Authorization');
@@ -53,6 +71,80 @@ app.use('/api/*', async (c, next) => {
 });
 
 app.get('/api/health', (c) => c.json({ status: 'ok' }));
+
+// Admin cleanup endpoint for placeholder data (protected)
+app.post('/api/admin/cleanup/placeholders', async (c) => {
+  // Additional admin check - ensure this is only accessible with admin privileges
+  const adminToken = c.env.ADMIN_TOKEN || c.env.APP_SYNC_TOKEN;
+  const authHeader = c.req.header('Authorization');
+  const token = authHeader?.replace('Bearer ', '').trim();
+  
+  if (!adminToken || token !== adminToken) {
+    return c.json({ error: 'Admin access required' }, 403);
+  }
+  
+  const db = c.env.DB;
+  const now = new Date().toISOString();
+  
+  try {
+    // Find placeholder spots based on heuristics
+    const placeholderSpots = await db.prepare(`
+      SELECT id, imageRemoteURLs FROM spots 
+      WHERE deleted = 0 
+      AND (
+        title IN ('Untitled', 'New Spot', '') 
+        OR (title = 'Untitled' AND details = '' AND imageRemoteURLs IS NULL)
+        OR (title = 'New Spot' AND details = '' AND imageRemoteURLs IS NULL)
+      )
+      AND createdAt < datetime('now', '-7 days')
+    `).all<{ id: string; imageRemoteURLs: string | null }>();
+    
+    if (placeholderSpots.results && placeholderSpots.results.length > 0) {
+      // Soft delete placeholder spots
+      const spotIds = placeholderSpots.results.map(spot => spot.id);
+      const placeholders = spotIds.map(() => '?').join(',');
+      
+      await db.prepare(`
+        UPDATE spots 
+        SET deleted = 1, updatedAt = ? 
+        WHERE id IN (${placeholders})
+      `).bind(now, ...spotIds).run();
+      
+      // Optional: Delete R2 objects for placeholders
+      for (const spot of placeholderSpots.results) {
+        if (spot.imageRemoteURLs) {
+          try {
+            const imageUrls = JSON.parse(spot.imageRemoteURLs) as string[];
+            for (const url of imageUrls) {
+              const fileName = url.split('/').pop();
+              if (fileName) {
+                await c.env.IMAGES.delete(fileName);
+              }
+            }
+          } catch (error) {
+            console.error('Failed to delete R2 objects for spot:', spot.id, error);
+          }
+        }
+      }
+      
+      return c.json({ 
+        status: 'success', 
+        deletedCount: placeholderSpots.results.length,
+        message: `Cleaned up ${placeholderSpots.results.length} placeholder spots`
+      });
+    }
+    
+    return c.json({ 
+      status: 'success', 
+      deletedCount: 0,
+      message: 'No placeholder spots found to clean up'
+    });
+    
+  } catch (error) {
+    console.error('Cleanup error:', error);
+    return c.json({ error: 'Failed to cleanup placeholder data' }, 500);
+  }
+});
 
 // Anonymous User Management
 app.post('/api/users/register', async (c) => {
@@ -128,10 +220,31 @@ app.get('/api/images/:fileName', async (c) => {
 });
 
 app.post('/api/sync/push', async (c) => {
-  const payload = await c.req.json<{
-    spots: any[];
-    groups: any[];
-  }>();
+  // Validate request body size (max 10MB)
+  const contentLength = c.req.header('content-length');
+  if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {
+    return c.json({ error: 'Payload too large (max 10MB)' }, 413);
+  }
+  
+  let payload: { spots: any[]; groups: any[] };
+  try {
+    payload = await c.req.json<{
+      spots: any[];
+      groups: any[];
+    }>();
+  } catch (error) {
+    return c.json({ error: 'Invalid JSON payload' }, 400);
+  }
+  
+  // Validate payload structure
+  if (!Array.isArray(payload.spots) || !Array.isArray(payload.groups)) {
+    return c.json({ error: 'Invalid payload: spots and groups must be arrays' }, 400);
+  }
+  
+  // Limit number of items per request
+  if (payload.spots.length > 500 || payload.groups.length > 100) {
+    return c.json({ error: 'Too many items: max 500 spots and 100 groups per request' }, 400);
+  }
 
   const now = new Date().toISOString();
   const db = c.env.DB;
@@ -139,8 +252,8 @@ app.post('/api/sync/push', async (c) => {
   for (const spot of payload.spots) {
     await db
       .prepare(
-        `INSERT INTO spots (id, title, subtitle, details, latitude, longitude, address, tags, topics, imageRemoteURLs, groupId, userId, createdAt, updatedAt, version, deleted)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16)
+        `INSERT INTO spots (id, title, subtitle, details, latitude, longitude, address, tags, topics, imageRemoteURLs, groupId, userId, globalRating, ratingUpdatedAt, createdAt, updatedAt, version, deleted)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18)
          ON CONFLICT(id) DO UPDATE SET
            title = excluded.title,
            subtitle = excluded.subtitle,
@@ -153,6 +266,8 @@ app.post('/api/sync/push', async (c) => {
            imageRemoteURLs = excluded.imageRemoteURLs,
            groupId = excluded.groupId,
            userId = excluded.userId,
+           globalRating = excluded.globalRating,
+           ratingUpdatedAt = excluded.ratingUpdatedAt,
            updatedAt = excluded.updatedAt,
            version = excluded.version,
            deleted = excluded.deleted`
@@ -170,6 +285,8 @@ app.post('/api/sync/push', async (c) => {
         JSON.stringify(spot.imageRemoteURLs ?? []),
         spot.groupId ?? null,
         spot.userId ?? null,
+        spot.globalRating ?? 0,
+        spot.ratingUpdatedAt ?? null,
         spot.createdAt ?? now,
         spot.updatedAt ?? now,
         spot.version ?? 0,
@@ -209,21 +326,28 @@ app.post('/api/sync/push', async (c) => {
 
 app.get('/api/sync/pull', async (c) => {
   const since = Number(c.req.query('sinceVersion') ?? '0');
+  const limit = Math.min(Number(c.req.query('limit') ?? '1000'), 1000); // Cap at 1000
+  const offset = Number(c.req.query('offset') ?? '0');
+  
   const rows = await c.env.DB.prepare(
-    'SELECT * FROM spots WHERE version > ?1 ORDER BY version ASC'
+    'SELECT * FROM spots WHERE version > ?1 ORDER BY version ASC LIMIT ?2 OFFSET ?3'
   )
-    .bind(since)
+    .bind(since, limit, offset)
     .all<SpotRow>();
 
   const groupRows = await c.env.DB.prepare(
-    'SELECT * FROM groups WHERE version > ?1 ORDER BY version ASC'
+    'SELECT * FROM groups WHERE version > ?1 ORDER BY version ASC LIMIT ?2 OFFSET ?3'
   )
-    .bind(since)
+    .bind(since, limit, offset)
     .all<GroupRow>();
+
+  const hasMore = (rows.results?.length ?? 0) === limit || (groupRows.results?.length ?? 0) === limit;
 
   return c.json({
     spots: rows.results?.map(deserializeSpot) ?? [],
-    groups: groupRows.results?.map(deserializeGroup) ?? []
+    groups: groupRows.results?.map(deserializeGroup) ?? [],
+    hasMore,
+    nextOffset: hasMore ? offset + limit : undefined
   });
 });
 
@@ -267,15 +391,72 @@ app.post('/api/vector/upsert', async (c) => {
 
 app.post('/api/search/semantic', async (c) => {
   const body = await c.req.json<{ embedding: number[]; topK?: number }>();
-  const vectors = await c.env.DB.prepare('SELECT spotId, embedding FROM vectors').all<{ spotId: string; embedding: string }>();
+  const topK = Math.min(body.topK ?? 10, 100); // Cap at 100 for performance
+  
+  // Limit vector fetch to avoid memory issues (e.g., most recent 1000 vectors)
+  // In production, use a proper vector database or ANN index
+  const vectors = await c.env.DB.prepare(
+    'SELECT spotId, embedding FROM vectors ORDER BY updatedAt DESC LIMIT 1000'
+  ).all<{ spotId: string; embedding: string }>();
+  
   const query = body.embedding;
-  const scored = (vectors.results ?? []).map((row) => {
-    const embedding = JSON.parse(row.embedding) as number[];
-    return { id: row.spotId, score: cosineSimilarity(query, embedding) };
-  });
+  
+  // Pre-allocate array for better performance
+  const scored: { id: string; score: number }[] = [];
+  
+  for (const row of vectors.results ?? []) {
+    try {
+      const embedding = JSON.parse(row.embedding) as number[];
+      const score = cosineSimilarity(query, embedding);
+      scored.push({ id: row.spotId, score });
+    } catch (error) {
+      console.error('Failed to parse embedding for spot:', row.spotId, error);
+      continue;
+    }
+  }
+  
+  // Use partial sort for better performance when topK << n
   scored.sort((a, b) => b.score - a.score);
-  const topK = body.topK ?? 10;
-  return c.json({ spotIds: scored.slice(0, topK).map((item) => item.id) });
+  
+  return c.json({ 
+    spotIds: scored.slice(0, topK).map((item) => item.id),
+    totalVectorsSearched: scored.length
+  });
+});
+
+// Rating update endpoint
+app.post('/api/spots/:id/rating', async (c) => {
+  const spotId = c.req.param('id');
+  const body = await c.req.json<{ rating: number }>();
+  const now = new Date().toISOString();
+  
+  if (body.rating < 0 || body.rating > 5) {
+    return c.json({ error: 'Rating must be between 0 and 5' }, 400);
+  }
+  
+  try {
+    // Update the spot's rating and increment version for sync
+    await c.env.DB.prepare(`
+      UPDATE spots 
+      SET globalRating = ?1, ratingUpdatedAt = ?2, updatedAt = ?3, version = version + 1 
+      WHERE id = ?4
+    `).bind(body.rating, now, now, spotId).run();
+    
+    // Return the updated spot
+    const updatedSpot = await c.env.DB.prepare(
+      'SELECT * FROM spots WHERE id = ?1'
+    ).bind(spotId).first<SpotRow>();
+    
+    if (!updatedSpot) {
+      return c.json({ error: 'Spot not found' }, 404);
+    }
+    
+    return c.json(deserializeSpot(updatedSpot));
+    
+  } catch (error) {
+    console.error('Rating update error:', error);
+    return c.json({ error: 'Failed to update rating' }, 500);
+  }
 });
 
 function deserializeSpot(row: SpotRow) {
@@ -292,6 +473,8 @@ function deserializeSpot(row: SpotRow) {
     imageRemoteURLs: JSON.parse(row.imageRemoteURLs ?? '[]'),
     groupId: row.groupId,
     userId: row.userId,
+    globalRating: row.globalRating,
+    ratingUpdatedAt: row.ratingUpdatedAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     version: row.version,

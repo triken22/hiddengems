@@ -1,12 +1,14 @@
 import SwiftUI
 import MapKit
 import UIKit
+import Foundation
 
 /// Main app container with custom tab bar navigation
 struct MainAppView: View {
     @EnvironmentObject private var homeViewModel: HomeViewModel
     @EnvironmentObject private var groupListViewModel: GroupListViewModel
     @EnvironmentObject private var settingsViewModel: SettingsViewModel
+    @EnvironmentObject private var gemDrawer: GemDrawerController
     
     @State private var selectedTab: TabItem = TabItem(
         title: "Explore",
@@ -23,29 +25,110 @@ struct MainAppView: View {
     ]
     
     var body: some View {
-        NavigationStack {
-            TabBarContainer(selectedTab: $selectedTab, tabs: tabs) { tab in
-                switch tab.tag {
-                case 0:
-                    HomeView(onNavigateToMap: {
-                        selectedTab = TabItem(title: "Map", icon: "map", selectedIcon: "map.fill", tag: 1)
-                    })
-                        .environmentObject(homeViewModel)
-                case 1:
-                    ExploreMapView()
-                        .environmentObject(homeViewModel)
-                case 2:
-                    SavedView(onNavigateToExplore: {
-                        selectedTab = TabItem(title: "Explore", icon: "house", selectedIcon: "house.fill", tag: 0)
-                    })
-                        .environmentObject(homeViewModel)
-                case 3:
-                    ProfileView()
-                        .environmentObject(homeViewModel)
-                default:
-                    HomeView()
-                        .environmentObject(homeViewModel)
+        ZStack {
+            NavigationStack {
+                TabBarContainer(selectedTab: $selectedTab, tabs: tabs) { tab in
+                    switch tab.tag {
+                    case 0:
+                        HomeView(onNavigateToMap: {
+                            selectedTab = TabItem(title: "Map", icon: "map", selectedIcon: "map.fill", tag: 1)
+                        })
+                    case 1:
+                        ExploreMapView()
+                    case 2:
+                        SavedView(onNavigateToExplore: {
+                            selectedTab = TabItem(title: "Explore", icon: "house", selectedIcon: "house.fill", tag: 0)
+                        })
+                    case 3:
+                        ProfileView()
+                    default:
+                        HomeView()
+                    }
                 }
+            }
+            
+            // Gem Details Drawer
+            BottomDrawer(
+                isPresented: $gemDrawer.isPresented,
+                detent: $gemDrawer.detent,
+                onScrimTap: {
+                    gemDrawer.dismiss()
+                }
+            ) {
+                GemDrawerPagerView(
+                    spots: gemDrawer.spots,
+                    selectedIndex: $gemDrawer.selectedIndex,
+                    onOpenFullDetails: { spot in
+                        // Navigate to full detail view
+                        // This would require navigation to SpotDetailView
+                    },
+                    onNavigate: { spot in
+                        // Open Apple Maps
+                        let coordinate = spot.coordinate
+                        let mapItem = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
+                        mapItem.name = spot.title
+                        mapItem.openInMaps(launchOptions: [
+                            MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving
+                        ])
+                    },
+                    onSave: { spot in
+                        // Toggle save status
+                        Task {
+                            let updatedSpot = Spot(
+                                id: spot.id,
+                                title: spot.title,
+                                subtitle: spot.subtitle,
+                                details: spot.details,
+                                coordinate: spot.coordinate,
+                                address: spot.address,
+                                tags: spot.tags,
+                                topics: spot.topics,
+                                images: spot.images,
+                                groupId: spot.groupId,
+                                userId: spot.userId,
+                                deleted: spot.deleted,
+                                saved: !spot.saved,
+                                version: spot.version + 1,
+                                createdAt: spot.createdAt,
+                                updatedAt: Date(),
+                                globalRating: spot.globalRating,
+                                ratingUpdatedAt: spot.ratingUpdatedAt
+                            )
+                            
+                            do {
+                                try await homeViewModel.spotRepository.save(spot: updatedSpot)
+                            } catch {
+                                print("Error toggling save: \(error)")
+                            }
+                        }
+                    },
+                    onShare: { spot in
+                        // Share spot
+                        let activityVC = UIActivityViewController(
+                            activityItems: [
+                                "Check out this hidden gem: \(spot.title)",
+                                "\(spot.address)"
+                            ],
+                            applicationActivities: nil
+                        )
+                        
+                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                           let window = windowScene.windows.first {
+                            window.rootViewController?.present(activityVC, animated: true)
+                        }
+                    },
+                    onRate: { spot, rating in
+                        // Update rating
+                        Task {
+                            do {
+                                try await homeViewModel.spotRepository.updateRating(spotId: spot.id, newRating: rating)
+                            } catch {
+                                print("Error updating rating: \(error)")
+                            }
+                        }
+                    }
+                )
+                .environmentObject(homeViewModel.spotRepository)
             }
         }
         .withAppTheme()
@@ -56,8 +139,7 @@ struct MainAppView: View {
 // MARK: - Explore Map View
 struct ExploreMapView: View {
     @EnvironmentObject private var viewModel: HomeViewModel
-    @State private var selectedSpot: Spot? = nil
-    @State private var showingBottomSheet = false
+    @EnvironmentObject private var gemDrawer: GemDrawerController
     @State private var showingCreateSpot = false
     @State private var selectedCoordinate: CLLocationCoordinate2D? = nil
     @State private var searchText = ""
@@ -70,17 +152,16 @@ struct ExploreMapView: View {
                 MapAnnotation(coordinate: spot.coordinate) {
                     SpotMapMarker(
                         spot: spot,
-                        isSelected: selectedSpot?.id == spot.id
+                        isSelected: false
                     ) {
-                        withAnimation(.spring()) {
-                            selectedSpot = spot
-                            showingBottomSheet = true
+                        // Present drawer with map spots
+                        if let index = viewModel.mapSpots.firstIndex(where: { $0.id == spot.id }) {
+                            gemDrawer.present(
+                                spots: viewModel.mapSpots,
+                                startAt: index,
+                                source: .map
+                            )
                         }
-                    }
-                    .onTapGesture {
-                        // Direct navigation to detail view
-                        selectedSpot = spot
-                        showingBottomSheet = true
                     }
                 }
             }
@@ -88,9 +169,9 @@ struct ExploreMapView: View {
                 await viewModel.centerOnUser()
             }
             .onTapGesture { location in
-                withAnimation(.spring()) {
-                    selectedSpot = nil
-                    showingBottomSheet = false
+                // Dismiss drawer if open
+                if gemDrawer.isPresented {
+                    gemDrawer.dismiss()
                 }
             }
             .onLongPressGesture(minimumDuration: 0.6) {
@@ -134,23 +215,10 @@ struct ExploreMapView: View {
                         }
                     }
                     .padding(.trailing, AppSpacing.lg)
-                    .padding(.bottom, showingBottomSheet ? 200 : AppSpacing.lg)
+                    .padding(.bottom, AppSpacing.lg)
                 }
             }
             
-            // Bottom Sheet
-            if showingBottomSheet {
-                VStack {
-                    Spacer()
-                    MapBottomSheet(spot: selectedSpot) {
-                        withAnimation(.spring()) {
-                            selectedSpot = nil
-                            showingBottomSheet = false
-                        }
-                    }
-                    .environmentObject(viewModel)
-                }
-            }
         }
         .navigationTitle("Map")
         .navigationBarTitleDisplayMode(.large)
@@ -186,6 +254,7 @@ struct ExploreMapView: View {
 // MARK: - Saved View
 struct SavedView: View {
     @EnvironmentObject private var viewModel: HomeViewModel
+    @EnvironmentObject private var gemDrawer: GemDrawerController
     var onNavigateToExplore: (() -> Void)? = nil
 
     @State private var searchText = ""
@@ -289,13 +358,16 @@ struct SavedView: View {
                             ],
                             spacing: AppSpacing.lg
                         ) {
-                            ForEach(savedSpots) { spot in
-                                NavigationLink(destination: SpotDetailView(spot: spot)
-                                    .environmentObject(viewModel)) {
-                                    SpotCardView(spot: spot)
-                                        .environmentObject(viewModel)
-                                }
-                                .buttonStyle(PlainButtonStyle())
+                            ForEach(Array(savedSpots.enumerated()), id: \.element.id) { index, spot in
+                                SpotCardView(spot: spot)
+                                    .environmentObject(viewModel)
+                                    .onTapGesture {
+                                        gemDrawer.present(
+                                            spots: savedSpots,
+                                            startAt: index,
+                                            source: .saved
+                                        )
+                                    }
                             }
                         }
                         .padding(.horizontal, AppSpacing.lg)
@@ -323,14 +395,16 @@ struct ProfileView: View {
         viewModel.spots.filter { $0.saved && !$0.deleted }.count
     }
     
+    // Count all non-deleted spots (user filtering will be added later with proper auth)
     private var createdSpotsCount: Int {
         viewModel.spots.filter { !$0.deleted }.count
     }
     
+    // Total images from non-deleted spots
     private var totalPhotosCount: Int {
-        viewModel.spots.reduce(0) { total, spot in
-            total + spot.images.count
-        }
+        viewModel.spots
+            .filter { !$0.deleted }
+            .reduce(0) { $0 + $1.images.count }
     }
     
     private var memberSinceDate: String {
@@ -408,6 +482,7 @@ struct ProfileView: View {
                 .padding(.horizontal, AppSpacing.lg)
                 
                 // Created Spots Section
+                let userSpots = viewModel.spots.filter { !$0.deleted }
                 if createdSpotsCount > 0 {
                     VStack(alignment: .leading, spacing: AppSpacing.md) {
                         Text("Your Spots")
@@ -418,7 +493,7 @@ struct ProfileView: View {
                         
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: AppSpacing.md) {
-                                ForEach(viewModel.spots.prefix(5)) { spot in
+                                ForEach(userSpots.prefix(5)) { spot in
                                     NavigationLink(destination: SpotDetailView(spot: spot)
                                         .environmentObject(viewModel)) {
                                         SpotCardView(spot: spot)

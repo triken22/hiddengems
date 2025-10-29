@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS spots (
   imageRemoteURLs TEXT,
   groupId TEXT,
   userId TEXT,
+  globalRating REAL DEFAULT 0,
+  ratingUpdatedAt TEXT,
   createdAt TEXT NOT NULL,
   updatedAt TEXT NOT NULL,
   version INTEGER NOT NULL,

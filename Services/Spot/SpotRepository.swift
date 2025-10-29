@@ -14,17 +14,25 @@ actor SpotRepository {
         self.context = context
         self.vectorStore = vectorStore
         self.aiService = aiService
-        Task { await loadInitialSpots() }
+    }
+    
+    func load() async {
+        await loadInitialSpots()
     }
 
     private func loadInitialSpots() async {
         let request: NSFetchRequest<SpotEntity> = SpotEntity.fetchRequest()
         request.predicate = NSPredicate(format: "isMarkedDeleted == NO")
-        do {
-            let entities = try context.fetch(request)
-            subject.send(entities.map(Spot.init(entity:)))
-        } catch {
-            subject.send([])
+        
+        await context.perform {
+            do {
+                let entities = try self.context.fetch(request)
+                let spots = entities.map(Spot.init(entity:))
+                self.subject.send(spots)
+            } catch {
+                print("Error loading initial spots: \(error)")
+                self.subject.send([])
+            }
         }
     }
 
@@ -35,11 +43,15 @@ actor SpotRepository {
     func fetchAll() async -> [Spot] {
         let request: NSFetchRequest<SpotEntity> = SpotEntity.fetchRequest()
         request.predicate = NSPredicate(format: "isMarkedDeleted == NO")
-        do {
-            let entities = try context.performAndWait { try context.fetch(request) }
-            return entities.map(Spot.init(entity:))
-        } catch {
-            return []
+        
+        return await context.perform {
+            do {
+                let entities = try self.context.fetch(request)
+                return entities.map(Spot.init(entity:))
+            } catch {
+                print("Error fetching all spots: \(error)")
+                return []
+            }
         }
     }
 
@@ -55,8 +67,11 @@ actor SpotRepository {
             let entity = try self.context.fetch(fetch).first ?? SpotEntity(context: self.context)
             entity.update(from: spot, context: self.context)
             try self.context.save()
-            self.subject.send((self.subject.value.filter { $0.id != spot.id } + [spot]).sorted { $0.updatedAt > $1.updatedAt })
         }
+        
+        // Update publisher on main thread to ensure UI updates safely
+        let updatedSpots = (subject.value.filter { $0.id != spot.id } + [spot]).sorted { $0.updatedAt > $1.updatedAt }
+        subject.send(updatedSpots)
     }
 
     func delete(id: String) async throws {
@@ -67,12 +82,59 @@ actor SpotRepository {
             entity.isMarkedDeleted = true
             entity.updatedAt = Date()
             try self.context.save()
-            self.subject.send(self.subject.value.filter { $0.id != id })
         }
+        
+        // Update publisher on main thread
+        subject.send(subject.value.filter { $0.id != id })
     }
 
     func semanticSearch(vector: [Float], topK: Int) throws -> [Spot] {
         let identifiers = try vectorStore.searchSimilar(to: vector, topK: topK)
         return subject.value.filter { identifiers.contains($0.id) }
+    }
+    
+    func updateRating(spotId: String, newRating: Double) async throws {
+        try await context.perform {
+            let fetch: NSFetchRequest<SpotEntity> = SpotEntity.fetchRequest()
+            fetch.predicate = NSPredicate(format: "id == %@", spotId)
+            guard let entity = try self.context.fetch(fetch).first else {
+                throw NSError(domain: "SpotRepository", code: 404, userInfo: [NSLocalizedDescriptionKey: "Spot not found"])
+            }
+            
+            entity.globalRating = newRating
+            entity.ratingUpdatedAt = Date()
+            entity.updatedAt = Date()
+            
+            try self.context.save()
+        }
+        
+        // Update the published spots on main thread
+        let updatedSpots = subject.value.map { spot in
+            if spot.id == spotId {
+                return Spot(
+                    id: spot.id,
+                    title: spot.title,
+                    subtitle: spot.subtitle,
+                    details: spot.details,
+                    coordinate: spot.coordinate,
+                    address: spot.address,
+                    tags: spot.tags,
+                    topics: spot.topics,
+                    images: spot.images,
+                    groupId: spot.groupId,
+                    userId: spot.userId,
+                    deleted: spot.deleted,
+                    saved: spot.saved,
+                    version: spot.version,
+                    globalRating: newRating,
+                    ratingUpdatedAt: Date(),
+                    createdAt: spot.createdAt,
+                    updatedAt: Date()
+                )
+            }
+            return spot
+        }
+        
+        subject.send(updatedSpots)
     }
 }

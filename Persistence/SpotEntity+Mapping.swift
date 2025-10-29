@@ -3,7 +3,36 @@ import CoreLocation
 
 extension Spot {
     init(entity: SpotEntity) {
-        self.id = entity.id ?? UUID().uuidString
+        // CRITICAL: Do not generate IDs or dates during mapping - these must exist in the entity
+        // If these are nil, it indicates data corruption or migration failure
+        guard let id = entity.id,
+              let createdAt = entity.createdAt,
+              let updatedAt = entity.updatedAt else {
+            print("ERROR: SpotEntity missing required fields. ID: \(entity.id ?? "nil"), created: \(entity.createdAt?.description ?? "nil"), updated: \(entity.updatedAt?.description ?? "nil")")
+            // Fall back to safe defaults to prevent crash, but this should be investigated
+            self.id = entity.id ?? UUID().uuidString
+            self.createdAt = entity.createdAt ?? Date()
+            self.updatedAt = entity.updatedAt ?? Date()
+            self.title = entity.title ?? "Untitled"
+            self.subtitle = entity.subtitle
+            self.details = entity.details ?? ""
+            self.coordinate = CLLocationCoordinate2D(latitude: entity.latitude, longitude: entity.longitude)
+            self.address = entity.address
+            self.tags = entity.tagsArray
+            self.topics = entity.topicsArray
+            self.images = entity.imagesArray
+            self.groupId = entity.groupId
+            self.userId = entity.userId
+            self.deleted = entity.isMarkedDeleted
+            self.saved = entity.isSaved
+            self.version = Int(entity.version)
+            self.globalRating = entity.globalRating
+            self.ratingUpdatedAt = entity.ratingUpdatedAt
+            self.distanceMeters = nil
+            return
+        }
+        
+        self.id = id
         self.title = entity.title ?? "Untitled"
         self.subtitle = entity.subtitle
         self.details = entity.details ?? ""
@@ -17,14 +46,21 @@ extension Spot {
         self.deleted = entity.isMarkedDeleted
         self.saved = entity.isSaved
         self.version = Int(entity.version)
-        self.createdAt = entity.createdAt ?? Date()
-        self.updatedAt = entity.updatedAt ?? Date()
+        self.globalRating = entity.globalRating
+        self.ratingUpdatedAt = entity.ratingUpdatedAt
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+        self.distanceMeters = nil
     }
 }
 
 extension SpotEntity {
     func update(from spot: Spot, context: NSManagedObjectContext) {
-        id = spot.id
+        // Ensure ID is always set for new entities
+        if id == nil {
+            id = spot.id
+        }
+        
         title = spot.title
         subtitle = spot.subtitle
         details = spot.details
@@ -39,7 +75,15 @@ extension SpotEntity {
         isMarkedDeleted = spot.deleted
         isSaved = spot.saved
         version = Int64(spot.version)
-        createdAt = spot.createdAt
+        globalRating = spot.globalRating
+        ratingUpdatedAt = spot.ratingUpdatedAt
+        
+        // Ensure createdAt is set for new entities (never update it)
+        if createdAt == nil {
+            createdAt = spot.createdAt
+        }
+        
+        // Always update updatedAt
         updatedAt = spot.updatedAt
     }
 

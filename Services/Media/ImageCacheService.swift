@@ -15,9 +15,14 @@ class ImageCacheService: ObservableObject {
         cache.countLimit = 100
         cache.totalCostLimit = 50 * 1024 * 1024 // 50MB
         
-        // Setup cache directory
-        let documentsPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-        cacheDirectory = documentsPath.appendingPathComponent("ImageCache")
+        // Setup cache directory with fallback
+        if let documentsPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
+            cacheDirectory = documentsPath.appendingPathComponent("ImageCache")
+        } else {
+            // Fallback to temporary directory if document directory unavailable
+            print("WARNING: Document directory unavailable, using temporary directory for image cache")
+            cacheDirectory = fileManager.temporaryDirectory.appendingPathComponent("ImageCache")
+        }
         
         // Create cache directory if it doesn't exist
         try? fileManager.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)

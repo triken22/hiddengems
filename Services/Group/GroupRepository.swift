@@ -8,16 +8,23 @@ actor GroupRepository {
 
     init(context: NSManagedObjectContext) {
         self.context = context
-        Task { await loadInitialGroups() }
+    }
+    
+    func load() async {
+        await loadInitialGroups()
     }
 
     private func loadInitialGroups() async {
         let request: NSFetchRequest<GroupEntity> = GroupEntity.fetchRequest()
-        do {
-            let groups = try context.fetch(request)
-            subject.send(groups.map(Group.init(entity:)))
-        } catch {
-            subject.send([])
+        
+        await context.perform {
+            do {
+                let groups = try self.context.fetch(request)
+                self.subject.send(groups.map(Group.init(entity:)))
+            } catch {
+                print("Error loading initial groups: \(error)")
+                self.subject.send([])
+            }
         }
     }
 

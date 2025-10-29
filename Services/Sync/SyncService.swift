@@ -30,7 +30,13 @@ final class DefaultSyncService: SyncService {
     func pull(since version: Int) async throws -> SyncPayload {
         var components = URLComponents(url: configuration.baseURL.appendingPathComponent("/api/sync/pull"), resolvingAgainstBaseURL: false)
         components?.queryItems = [URLQueryItem(name: "sinceVersion", value: String(version))]
-        var request = URLRequest(url: components!.url!)
+        
+        guard let components = components,
+              let url = components.url else {
+            throw URLError(.badURL)
+        }
+        
+        var request = URLRequest(url: url)
         request.addValue("Bearer \(configuration.bearerToken)", forHTTPHeaderField: "Authorization")
         let (data, _) = try await urlSession.data(for: request)
         let decoder = JSONDecoder()

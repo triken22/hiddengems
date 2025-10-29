@@ -21,6 +21,7 @@ final class HomeViewModel: ObservableObject {
     @Published var searchText = ""
     @Published var selectedCategory: String? = nil
     @Published var isLoading = false
+    @Published var currentLocation: CLLocation?
 
     let groupListViewModel: GroupListViewModel
     let settingsViewModel: SettingsViewModel
@@ -64,6 +65,7 @@ final class HomeViewModel: ObservableObject {
 
         Task {
             await loadSpots()
+            await updateCurrentLocation()
         }
     }
 
@@ -220,6 +222,50 @@ final class HomeViewModel: ObservableObject {
     func onAppear() {
         Task {
             await loadSpots()
+            await updateCurrentLocation()
         }
+    }
+    
+    // MARK: - Distance Computation
+    
+    private func updateCurrentLocation() async {
+        if let location = await locationService.currentLocation() {
+            await MainActor.run {
+                self.currentLocation = location
+                self.updateDistances()
+            }
+        }
+    }
+    
+    private func updateDistances() {
+        guard let currentLocation = currentLocation else { return }
+        
+        // Update distances for all spots
+        for i in 0..<spots.count {
+            let spot = spots[i]
+            let spotLocation = CLLocation(latitude: spot.coordinate.latitude, longitude: spot.coordinate.longitude)
+            let distance = currentLocation.distance(from: spotLocation)
+            spots[i].distanceMeters = distance
+        }
+        
+        // Update distances for map spots
+        for i in 0..<mapSpots.count {
+            let spot = mapSpots[i]
+            let spotLocation = CLLocation(latitude: spot.coordinate.latitude, longitude: spot.coordinate.longitude)
+            let distance = currentLocation.distance(from: spotLocation)
+            mapSpots[i].distanceMeters = distance
+        }
+        
+        // Update distances for filtered spots
+        for i in 0..<filteredSpots.count {
+            let spot = filteredSpots[i]
+            let spotLocation = CLLocation(latitude: spot.coordinate.latitude, longitude: spot.coordinate.longitude)
+            let distance = currentLocation.distance(from: spotLocation)
+            filteredSpots[i].distanceMeters = distance
+        }
+    }
+    
+    func refreshLocation() async {
+        await updateCurrentLocation()
     }
 }

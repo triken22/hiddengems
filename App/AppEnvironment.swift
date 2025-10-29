@@ -12,6 +12,7 @@ final class AppEnvironment {
     let homeViewModel: HomeViewModel
     let groupListViewModel: GroupListViewModel
     let settingsViewModel: SettingsViewModel
+    let gemDrawer: GemDrawerController
 
     init() {
         let persistenceController = PersistenceController.shared
@@ -38,12 +39,50 @@ final class AppEnvironment {
         self.locationService = DefaultLocationService()
         self.mediaService = DefaultMediaService()
         
-        let syncConfig = SyncConfiguration(baseURL: URL(string: "https://localhost:8787")!, bearerToken: "debug-token")
+        // Load repository data explicitly after initialization
+        Task {
+            await spotRepository.load()
+            await groupRepository.load()
+        }
+        
+        // Load configuration from Info.plist with production defaults
+        let bundle = Bundle.main
+        let apiBaseURLString = (bundle.object(forInfoDictionaryKey: "API_BASE_URL") as? String) ?? "https://api.hiddengems.app"
+        let syncToken = (bundle.object(forInfoDictionaryKey: "APP_SYNC_TOKEN") as? String) ?? ""
+        
+        guard let baseURL = URL(string: apiBaseURLString), !apiBaseURLString.isEmpty else {
+            print("ERROR: Invalid or missing API_BASE_URL in Info.plist. Using fallback.")
+            let fallbackURL = URL(string: "https://api.hiddengems.app")!
+            let syncConfig = SyncConfiguration(baseURL: fallbackURL, bearerToken: syncToken)
+            let syncService = DefaultSyncService(configuration: syncConfig)
+            self.syncCoordinator = SyncCoordinator(syncService: syncService, persistenceController: persistenceController)
+            
+            self.groupListViewModel = GroupListViewModel(groupRepository: groupRepository, syncCoordinator: syncCoordinator)
+            self.settingsViewModel = SettingsViewModel()
+            self.gemDrawer = GemDrawerController()
+            
+            self.homeViewModel = HomeViewModel(spotRepository: spotRepository,
+                                             groupRepository: groupRepository,
+                                             locationService: locationService,
+                                             syncCoordinator: syncCoordinator,
+                                             mediaService: mediaService,
+                                             aiService: aiService,
+                                             groupListViewModel: groupListViewModel,
+                                             settingsViewModel: settingsViewModel)
+            return
+        }
+        
+        if syncToken.isEmpty {
+            print("WARNING: APP_SYNC_TOKEN is empty. Sync may fail without authentication.")
+        }
+        
+        let syncConfig = SyncConfiguration(baseURL: baseURL, bearerToken: syncToken)
         let syncService = DefaultSyncService(configuration: syncConfig)
         self.syncCoordinator = SyncCoordinator(syncService: syncService, persistenceController: persistenceController)
         
         self.groupListViewModel = GroupListViewModel(groupRepository: groupRepository, syncCoordinator: syncCoordinator)
         self.settingsViewModel = SettingsViewModel()
+        self.gemDrawer = GemDrawerController()
         
         self.homeViewModel = HomeViewModel(spotRepository: spotRepository,
                                          groupRepository: groupRepository,

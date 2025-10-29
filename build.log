@@ -1,0 +1,42 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project HiddenGems.xcodeproj -scheme HiddenGems -configuration Debug -sdk iphoneos -destination id=8EE998E0-2F37-4DFA-AD47-639FCA84EFB6 build
+
+User defaults from command line:
+    IDEPackageSupportUseBuiltinSCM = YES
+
+Build settings from command line:
+    SDKROOT = iphoneos18.2
+
+2025-10-29 16:08:14.510 xcodebuild[14438:21265702] Writing error result bundle to /var/folders/57/ypj4163n4l3dkdp96kb213s00000gn/T/ResultBundle_2025-29-10_16-08-0014.xcresult
+xcodebuild: error: Unable to find a device matching the provided destination specifier:
+		{ id:8EE998E0-2F37-4DFA-AD47-639FCA84EFB6 }
+
+	The requested device could not be found because no available devices matched the request.
+
+	Available destinations for the "HiddenGems" scheme:
+		{ platform:macOS, arch:arm64, variant:Designed for [iPad,iPhone], id:00008112-000239690A8B401E, name:My Mac }
+		{ platform:iOS, arch:arm64, id:00008110-00060CA426A0401E, name:iPhone (10) }
+		{ platform:iOS, id:dvtdevice-DVTiPhonePlaceholder-iphoneos:placeholder, name:Any iOS Device }
+		{ platform:iOS Simulator, id:dvtdevice-DVTiOSDeviceSimulatorPlaceholder-iphonesimulator:placeholder, name:Any iOS Simulator Device }
+		{ platform:iOS Simulator, id:C88092A3-4296-4349-8827-7BF7D0020521, OS:18.3.1, name:iPad (10th generation) }
+		{ platform:iOS Simulator, id:C88092A3-4296-4349-8827-7BF7D0020521, OS:18.3.1, name:iPad (10th generation) }
+		{ platform:iOS Simulator, id:03BF5F04-151A-4538-9579-FE6631DC95B3, OS:18.3.1, name:iPad Air 11-inch (M2) }
+		{ platform:iOS Simulator, id:03BF5F04-151A-4538-9579-FE6631DC95B3, OS:18.3.1, name:iPad Air 11-inch (M2) }
+		{ platform:iOS Simulator, id:F355484C-E7AE-41E4-9A2F-3DE5190D9CAD, OS:18.3.1, name:iPad Air 13-inch (M2) }
+		{ platform:iOS Simulator, id:F355484C-E7AE-41E4-9A2F-3DE5190D9CAD, OS:18.3.1, name:iPad Air 13-inch (M2) }
+		{ platform:iOS Simulator, id:1A9ED44E-A65A-498C-A6C6-CDEB4D532EB6, OS:18.3.1, name:iPad Pro 11-inch (M4) }
+		{ platform:iOS Simulator, id:1A9ED44E-A65A-498C-A6C6-CDEB4D532EB6, OS:18.3.1, name:iPad Pro 11-inch (M4) }
+		{ platform:iOS Simulator, id:7D2DEA1E-02B9-4907-A194-EC6B80254632, OS:18.3.1, name:iPad Pro 13-inch (M4) }
+		{ platform:iOS Simulator, id:7D2DEA1E-02B9-4907-A194-EC6B80254632, OS:18.3.1, name:iPad Pro 13-inch (M4) }
+		{ platform:iOS Simulator, id:7026288D-6A98-48B6-8420-7B2B9427D28A, OS:18.3.1, name:iPad mini (A17 Pro) }
+		{ platform:iOS Simulator, id:7026288D-6A98-48B6-8420-7B2B9427D28A, OS:18.3.1, name:iPad mini (A17 Pro) }
+		{ platform:iOS Simulator, id:2390964D-159E-486D-8E81-DB0BEE8CB339, OS:18.3.1, name:iPhone 16 }
+		{ platform:iOS Simulator, id:2390964D-159E-486D-8E81-DB0BEE8CB339, OS:18.3.1, name:iPhone 16 }
+		{ platform:iOS Simulator, id:FC3B35AA-8B8C-454E-BA2D-2FDA11A5E79F, OS:18.3.1, name:iPhone 16 Plus }
+		{ platform:iOS Simulator, id:FC3B35AA-8B8C-454E-BA2D-2FDA11A5E79F, OS:18.3.1, name:iPhone 16 Plus }
+		{ platform:iOS Simulator, id:FFA3AA23-C0C2-41DE-9A20-B3BC55864B75, OS:18.3.1, name:iPhone 16 Pro }
+		{ platform:iOS Simulator, id:FFA3AA23-C0C2-41DE-9A20-B3BC55864B75, OS:18.3.1, name:iPhone 16 Pro }
+		{ platform:iOS Simulator, id:A2F13BC5-9BE3-4B62-807F-B9F2BD3F5F07, OS:18.3.1, name:iPhone 16 Pro Max }
+		{ platform:iOS Simulator, id:A2F13BC5-9BE3-4B62-807F-B9F2BD3F5F07, OS:18.3.1, name:iPhone 16 Pro Max }
+		{ platform:iOS Simulator, id:FBFB8660-BDDD-4CF3-8E64-2AD832838FEE, OS:18.3.1, name:iPhone SE (3rd generation) }
+		{ platform:iOS Simulator, id:FBFB8660-BDDD-4CF3-8E64-2AD832838FEE, OS:18.3.1, name:iPhone SE (3rd generation) }

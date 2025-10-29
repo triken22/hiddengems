@@ -17,8 +17,29 @@ struct Spot: Identifiable, Hashable, Codable {
     let deleted: Bool
     let saved: Bool
     let version: Int
+    let globalRating: Double
+    let ratingUpdatedAt: Date?
     let createdAt: Date
     let updatedAt: Date
+    
+    // Transient property for distance computation (not persisted)
+    var distanceMeters: Double?
+    
+    // Distance formatting helper
+    var formattedDistance: String? {
+        guard let distance = distanceMeters else { return nil }
+        let formatter = MeasurementFormatter()
+        formatter.unitOptions = .providedUnit
+        formatter.numberFormatter.maximumFractionDigits = 1
+        
+        if distance < 1000 {
+            let meters = Measurement(value: distance, unit: UnitLength.meters)
+            return formatter.string(from: meters)
+        } else {
+            let kilometers = Measurement(value: distance / 1000, unit: UnitLength.kilometers)
+            return formatter.string(from: kilometers)
+        }
+    }
     
     static func == (lhs: Spot, rhs: Spot) -> Bool {
         lhs.id == rhs.id
@@ -29,7 +50,7 @@ struct Spot: Identifiable, Hashable, Codable {
     }
     
     enum CodingKeys: String, CodingKey {
-        case id, title, subtitle, details, address, tags, topics, images, groupId, userId, deleted, saved, version, createdAt, updatedAt
+        case id, title, subtitle, details, address, tags, topics, images, groupId, userId, deleted, saved, version, globalRating, ratingUpdatedAt, createdAt, updatedAt
         case latitude, longitude
     }
     
@@ -47,6 +68,8 @@ struct Spot: Identifiable, Hashable, Codable {
          deleted: Bool,
          saved: Bool = false,
          version: Int,
+         globalRating: Double = 0.0,
+         ratingUpdatedAt: Date? = nil,
          createdAt: Date,
          updatedAt: Date) {
         self.id = id
@@ -63,8 +86,11 @@ struct Spot: Identifiable, Hashable, Codable {
         self.deleted = deleted
         self.saved = saved
         self.version = version
+        self.globalRating = globalRating
+        self.ratingUpdatedAt = ratingUpdatedAt
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+        self.distanceMeters = nil
     }
     
     init(from decoder: Decoder) throws {
@@ -82,8 +108,11 @@ struct Spot: Identifiable, Hashable, Codable {
         deleted = try container.decode(Bool.self, forKey: .deleted)
         saved = try container.decodeIfPresent(Bool.self, forKey: .saved) ?? false
         version = try container.decode(Int.self, forKey: .version)
+        globalRating = try container.decodeIfPresent(Double.self, forKey: .globalRating) ?? 0.0
+        ratingUpdatedAt = try container.decodeIfPresent(Date.self, forKey: .ratingUpdatedAt)
         createdAt = try container.decode(Date.self, forKey: .createdAt)
         updatedAt = try container.decode(Date.self, forKey: .updatedAt)
+        distanceMeters = nil
         let latitude = try container.decode(Double.self, forKey: .latitude)
         let longitude = try container.decode(Double.self, forKey: .longitude)
         coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
@@ -104,6 +133,8 @@ struct Spot: Identifiable, Hashable, Codable {
         try container.encode(deleted, forKey: .deleted)
         try container.encode(saved, forKey: .saved)
         try container.encode(version, forKey: .version)
+        try container.encode(globalRating, forKey: .globalRating)
+        try container.encodeIfPresent(ratingUpdatedAt, forKey: .ratingUpdatedAt)
         try container.encode(createdAt, forKey: .createdAt)
         try container.encode(updatedAt, forKey: .updatedAt)
         try container.encode(coordinate.latitude, forKey: .latitude)
