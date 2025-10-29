@@ -1,0 +1,925 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000012000000100000001 /* HiddenGemsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000001 /* HiddenGemsApp.swift */; };
+		A10000012000000100000002 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000002 /* AppEnvironment.swift */; };
+		A10000012000000100000003 /* AppEnvironment+Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000003 /* AppEnvironment+Preview.swift */; };
+		A10000012000000100000010 /* HomeTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000010 /* HomeTabView.swift */; };
+		A10000012000000100000011 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000011 /* HomeViewModel.swift */; };
+		A10000012000000100000012 /* HomeMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000012 /* HomeMapView.swift */; };
+		A10000012000000100000013 /* QuickAddViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000013 /* QuickAddViewModel.swift */; };
+		A10000012000000100000014 /* QuickAddView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000014 /* QuickAddView.swift */; };
+		A10000012000000100000015 /* FloatingActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000015 /* FloatingActionButton.swift */; };
+		A10000012000000100000016 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000016 /* SettingsView.swift */; };
+		A10000012000000100000017 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000017 /* SettingsViewModel.swift */; };
+		A10000012000000100000018 /* GroupListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000018 /* GroupListView.swift */; };
+		A10000012000000100000019 /* GroupListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000019 /* GroupListViewModel.swift */; };
+		A1000001200000010000001A /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000200000010000001A /* OnboardingView.swift */; };
+		A1000001200000010000001B /* Spot.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000200000010000001B /* Spot.swift */; };
+		A1000001200000010000001C /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000200000010000001C /* Group.swift */; };
+		A1000001200000010000001D /* Setting.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000200000010000001D /* Setting.swift */; };
+		A1000001200000010000001E /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000200000010000001E /* PersistenceController.swift */; };
+		A1000001200000010000001F /* SpotEntity+Mapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000200000010000001F /* SpotEntity+Mapping.swift */; };
+		A10000012000000100000020 /* GroupEntity+Mapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000020 /* GroupEntity+Mapping.swift */; };
+		A10000012000000100000021 /* SettingEntity+Mapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000021 /* SettingEntity+Mapping.swift */; };
+		A10000012000000100000023 /* HybridAIConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000023 /* HybridAIConfiguration.swift */; };
+		A10000012000000100000024 /* HybridAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000024 /* HybridAIService.swift */; };
+		A10000012000000100000025 /* AIJobQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000025 /* AIJobQueue.swift */; };
+		A10000012000000100000026 /* MediaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000026 /* MediaService.swift */; };
+		A10000012000000100000027 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000027 /* LocationService.swift */; };
+		A10000012000000100000028 /* VectorStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000028 /* VectorStore.swift */; };
+		A10000012000000100000029 /* SpotRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000029 /* SpotRepository.swift */; };
+		A1000001200000010000002A /* GroupRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000200000010000002A /* GroupRepository.swift */; };
+		A1000001200000010000002B /* SyncConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000200000010000002B /* SyncConfiguration.swift */; };
+		A1000001200000010000002C /* SyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000200000010000002C /* SyncService.swift */; };
+		A1000001200000010000002D /* SyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000200000010000002D /* SyncCoordinator.swift */; };
+		A1000001200000010000002E /* PreviewSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000200000010000002E /* PreviewSyncService.swift */; };
+		A10000012000000100000030 /* SpotRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000030 /* SpotRepositoryTests.swift */; };
+		A10000012000000100000031 /* HiddenGemsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000031 /* HiddenGemsUITests.swift */; };
+		A10000012000000100000041 /* HiddenGems.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000041 /* HiddenGems.xcdatamodeld */; };
+		A10000012000000100000042 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000002000000100000042 /* Assets.xcassets */; };
+		A95B5BA92EB20B8F000B4F20 /* SearchBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95B5BA12EB20B8F000B4F20 /* SearchBarView.swift */; };
+		A95B5BAA2EB20B8F000B4F20 /* RoundedImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95B5BA02EB20B8F000B4F20 /* RoundedImageView.swift */; };
+		A95B5BAB2EB20B8F000B4F20 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95B5BA32EB20B8F000B4F20 /* AppTheme.swift */; };
+		A95B5BAC2EB20B8F000B4F20 /* PillButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95B5B9F2EB20B8F000B4F20 /* PillButton.swift */; };
+		A95B5BAD2EB20B8F000B4F20 /* CustomTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95B5B9C2EB20B8F000B4F20 /* CustomTabBar.swift */; };
+		A95B5BAE2EB20B8F000B4F20 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95B5BA62EB20B8F000B4F20 /* Typography.swift */; };
+		A95B5BAF2EB20B8F000B4F20 /* Spacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95B5BA52EB20B8F000B4F20 /* Spacing.swift */; };
+		A95B5BB02EB20B8F000B4F20 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95B5BA42EB20B8F000B4F20 /* Colors.swift */; };
+		A95B5BB12EB20B8F000B4F20 /* FloatingCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95B5B9D2EB20B8F000B4F20 /* FloatingCard.swift */; };
+		A95B5BB22EB20B8F000B4F20 /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95B5B9E2EB20B8F000B4F20 /* LoadingView.swift */; };
+		A95B5BB62EB20BBE000B4F20 /* CollectionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95B5BB32EB20BBE000B4F20 /* CollectionsView.swift */; };
+		A95B5BBD2EB20BD7000B4F20 /* CreateSpotViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95B5BB72EB20BD7000B4F20 /* CreateSpotViewModel.swift */; };
+		A95B5BBE2EB20BD7000B4F20 /* CreateSpotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95B5BB92EB20BD7000B4F20 /* CreateSpotView.swift */; };
+		A95B5BBF2EB20BD7000B4F20 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95B5BBA2EB20BD7000B4F20 /* ImagePicker.swift */; };
+		A95B5BC52EB20BDD000B4F20 /* SpotDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95B5BC02EB20BDD000B4F20 /* SpotDetailViewModel.swift */; };
+		A95B5BC62EB20BDD000B4F20 /* SpotDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95B5BC22EB20BDD000B4F20 /* SpotDetailView.swift */; };
+		A95B5BCA2EB20BEA000B4F20 /* SpotMapMarker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95B5BC72EB20BEA000B4F20 /* SpotMapMarker.swift */; };
+		A95B5BCD2EB20C48000B4F20 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95B5BCB2EB20C48000B4F20 /* HomeView.swift */; };
+		A95B5BD02EB20C82000B4F20 /* MainAppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95B5BCE2EB20C82000B4F20 /* MainAppView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A10000012000000100000050 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1000001200000010000FFF0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A10000012000000100000070;
+			remoteInfo = HiddenGems;
+		};
+		A10000012000000100000051 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1000001200000010000FFF0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A10000012000000100000071;
+			remoteInfo = HiddenGemsTests;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		A10000002000000100000001 /* HiddenGemsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiddenGemsApp.swift; sourceTree = "<group>"; };
+		A10000002000000100000002 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
+		A10000002000000100000003 /* AppEnvironment+Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppEnvironment+Preview.swift"; sourceTree = "<group>"; };
+		A10000002000000100000010 /* HomeTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTabView.swift; sourceTree = "<group>"; };
+		A10000002000000100000011 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
+		A10000002000000100000012 /* HomeMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeMapView.swift; sourceTree = "<group>"; };
+		A10000002000000100000013 /* QuickAddViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickAddViewModel.swift; sourceTree = "<group>"; };
+		A10000002000000100000014 /* QuickAddView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickAddView.swift; sourceTree = "<group>"; };
+		A10000002000000100000015 /* FloatingActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingActionButton.swift; sourceTree = "<group>"; };
+		A10000002000000100000016 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A10000002000000100000017 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
+		A10000002000000100000018 /* GroupListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupListView.swift; sourceTree = "<group>"; };
+		A10000002000000100000019 /* GroupListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupListViewModel.swift; sourceTree = "<group>"; };
+		A1000000200000010000001A /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		A1000000200000010000001B /* Spot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Spot.swift; sourceTree = "<group>"; };
+		A1000000200000010000001C /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
+		A1000000200000010000001D /* Setting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Setting.swift; sourceTree = "<group>"; };
+		A1000000200000010000001E /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
+		A1000000200000010000001F /* SpotEntity+Mapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SpotEntity+Mapping.swift"; sourceTree = "<group>"; };
+		A10000002000000100000020 /* GroupEntity+Mapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GroupEntity+Mapping.swift"; sourceTree = "<group>"; };
+		A10000002000000100000021 /* SettingEntity+Mapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingEntity+Mapping.swift"; sourceTree = "<group>"; };
+		A10000002000000100000023 /* HybridAIConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HybridAIConfiguration.swift; sourceTree = "<group>"; };
+		A10000002000000100000024 /* HybridAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HybridAIService.swift; sourceTree = "<group>"; };
+		A10000002000000100000025 /* AIJobQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIJobQueue.swift; sourceTree = "<group>"; };
+		A10000002000000100000026 /* MediaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaService.swift; sourceTree = "<group>"; };
+		A10000002000000100000027 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
+		A10000002000000100000028 /* VectorStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VectorStore.swift; sourceTree = "<group>"; };
+		A10000002000000100000029 /* SpotRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotRepository.swift; sourceTree = "<group>"; };
+		A1000000200000010000002A /* GroupRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupRepository.swift; sourceTree = "<group>"; };
+		A1000000200000010000002B /* SyncConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncConfiguration.swift; sourceTree = "<group>"; };
+		A1000000200000010000002C /* SyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncService.swift; sourceTree = "<group>"; };
+		A1000000200000010000002D /* SyncCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncCoordinator.swift; sourceTree = "<group>"; };
+		A1000000200000010000002E /* PreviewSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewSyncService.swift; sourceTree = "<group>"; };
+		A10000002000000100000030 /* SpotRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotRepositoryTests.swift; sourceTree = "<group>"; };
+		A10000002000000100000031 /* HiddenGemsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiddenGemsUITests.swift; sourceTree = "<group>"; };
+		A10000002000000100000040 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A10000002000000100000041 /* HiddenGems.xcdatamodeld */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = HiddenGems.xcdatamodeld; sourceTree = "<group>"; };
+		A10000002000000100000042 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A10000002000000100000043 /* HiddenGems.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HiddenGems.entitlements; sourceTree = "<group>"; };
+		A10000002000000100000044 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = SOURCE_ROOT; };
+		A10000002000000100000045 /* Config.Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.Debug.xcconfig; sourceTree = SOURCE_ROOT; };
+		A10000002000000100000046 /* Config.Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.Release.xcconfig; sourceTree = SOURCE_ROOT; };
+		A95B5B9C2EB20B8F000B4F20 /* CustomTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTabBar.swift; sourceTree = "<group>"; };
+		A95B5B9D2EB20B8F000B4F20 /* FloatingCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingCard.swift; sourceTree = "<group>"; };
+		A95B5B9E2EB20B8F000B4F20 /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
+		A95B5B9F2EB20B8F000B4F20 /* PillButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PillButton.swift; sourceTree = "<group>"; };
+		A95B5BA02EB20B8F000B4F20 /* RoundedImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundedImageView.swift; sourceTree = "<group>"; };
+		A95B5BA12EB20B8F000B4F20 /* SearchBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBarView.swift; sourceTree = "<group>"; };
+		A95B5BA32EB20B8F000B4F20 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
+		A95B5BA42EB20B8F000B4F20 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		A95B5BA52EB20B8F000B4F20 /* Spacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Spacing.swift; sourceTree = "<group>"; };
+		A95B5BA62EB20B8F000B4F20 /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
+		A95B5BB32EB20BBE000B4F20 /* CollectionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsView.swift; sourceTree = "<group>"; };
+		A95B5BB72EB20BD7000B4F20 /* CreateSpotViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateSpotViewModel.swift; sourceTree = "<group>"; };
+		A95B5BB92EB20BD7000B4F20 /* CreateSpotView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateSpotView.swift; sourceTree = "<group>"; };
+		A95B5BBA2EB20BD7000B4F20 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
+		A95B5BC02EB20BDD000B4F20 /* SpotDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotDetailViewModel.swift; sourceTree = "<group>"; };
+		A95B5BC22EB20BDD000B4F20 /* SpotDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotDetailView.swift; sourceTree = "<group>"; };
+		A95B5BC72EB20BEA000B4F20 /* SpotMapMarker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotMapMarker.swift; sourceTree = "<group>"; };
+		A95B5BCB2EB20C48000B4F20 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		A95B5BCE2EB20C82000B4F20 /* MainAppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainAppView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A10000012000000100000060 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000012000000100000061 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000012000000100000062 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A10000012000000100000090 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				A10000002000000100000001 /* HiddenGemsApp.swift */,
+				A10000002000000100000002 /* AppEnvironment.swift */,
+				A10000002000000100000003 /* AppEnvironment+Preview.swift */,
+			);
+			path = App;
+			sourceTree = SOURCE_ROOT;
+		};
+		A10000012000000100000091 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				A10000012000000100000092 /* Home */,
+				A10000012000000100000093 /* Groups */,
+				A10000012000000100000094 /* Common */,
+				A10000012000000100000095 /* Onboarding */,
+				A95B5BA82EB20B8F000B4F20 /* Design */,
+				A95B5BB52EB20BBE000B4F20 /* Profile */,
+				A95B5BBC2EB20BD7000B4F20 /* CreateSpot */,
+				A95B5BC42EB20BDD000B4F20 /* SpotDetail */,
+				A95B5BC92EB20BEA000B4F20 /* Map */,
+				A95B5BCF2EB20C82000B4F20 /* App */,
+			);
+			path = Features;
+			sourceTree = SOURCE_ROOT;
+		};
+		A10000012000000100000092 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				A10000002000000100000010 /* HomeTabView.swift */,
+				A10000002000000100000011 /* HomeViewModel.swift */,
+				A10000002000000100000012 /* HomeMapView.swift */,
+				A10000002000000100000013 /* QuickAddViewModel.swift */,
+				A10000002000000100000014 /* QuickAddView.swift */,
+				A95B5BCC2EB20C48000B4F20 /* Views */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		A10000012000000100000093 /* Groups */ = {
+			isa = PBXGroup;
+			children = (
+				A10000002000000100000018 /* GroupListView.swift */,
+				A10000002000000100000019 /* GroupListViewModel.swift */,
+			);
+			path = Groups;
+			sourceTree = "<group>";
+		};
+		A10000012000000100000094 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				A10000002000000100000015 /* FloatingActionButton.swift */,
+				A10000002000000100000016 /* SettingsView.swift */,
+				A10000002000000100000017 /* SettingsViewModel.swift */,
+			);
+			path = Common;
+			sourceTree = "<group>";
+		};
+		A10000012000000100000095 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000200000010000001A /* OnboardingView.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		A10000012000000100000096 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000200000010000001B /* Spot.swift */,
+				A1000000200000010000001C /* Group.swift */,
+				A1000000200000010000001D /* Setting.swift */,
+			);
+			path = Model;
+			sourceTree = SOURCE_ROOT;
+		};
+		A10000012000000100000097 /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000200000010000001E /* PersistenceController.swift */,
+				A1000000200000010000001F /* SpotEntity+Mapping.swift */,
+				A10000002000000100000020 /* GroupEntity+Mapping.swift */,
+				A10000002000000100000021 /* SettingEntity+Mapping.swift */,
+				A10000002000000100000041 /* HiddenGems.xcdatamodeld */,
+			);
+			path = Persistence;
+			sourceTree = SOURCE_ROOT;
+		};
+		A10000012000000100000098 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A100000120000001000000A0 /* AI */,
+				A100000120000001000000A1 /* Media */,
+				A100000120000001000000A2 /* Location */,
+				A100000120000001000000A3 /* Vector */,
+				A100000120000001000000A4 /* Spot */,
+				A100000120000001000000A5 /* Group */,
+				A100000120000001000000A6 /* Sync */,
+			);
+			path = Services;
+			sourceTree = SOURCE_ROOT;
+		};
+		A100000120000001000000A0 /* AI */ = {
+			isa = PBXGroup;
+			children = (
+				A10000002000000100000023 /* HybridAIConfiguration.swift */,
+				A10000002000000100000024 /* HybridAIService.swift */,
+				A10000002000000100000025 /* AIJobQueue.swift */,
+			);
+			path = AI;
+			sourceTree = "<group>";
+		};
+		A100000120000001000000A1 /* Media */ = {
+			isa = PBXGroup;
+			children = (
+				A10000002000000100000026 /* MediaService.swift */,
+			);
+			path = Media;
+			sourceTree = "<group>";
+		};
+		A100000120000001000000A2 /* Location */ = {
+			isa = PBXGroup;
+			children = (
+				A10000002000000100000027 /* LocationService.swift */,
+			);
+			path = Location;
+			sourceTree = "<group>";
+		};
+		A100000120000001000000A3 /* Vector */ = {
+			isa = PBXGroup;
+			children = (
+				A10000002000000100000028 /* VectorStore.swift */,
+			);
+			path = Vector;
+			sourceTree = "<group>";
+		};
+		A100000120000001000000A4 /* Spot */ = {
+			isa = PBXGroup;
+			children = (
+				A10000002000000100000029 /* SpotRepository.swift */,
+			);
+			path = Spot;
+			sourceTree = "<group>";
+		};
+		A100000120000001000000A5 /* Group */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000200000010000002A /* GroupRepository.swift */,
+			);
+			path = Group;
+			sourceTree = "<group>";
+		};
+		A100000120000001000000A6 /* Sync */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000200000010000002B /* SyncConfiguration.swift */,
+				A1000000200000010000002C /* SyncService.swift */,
+				A1000000200000010000002D /* SyncCoordinator.swift */,
+				A1000000200000010000002E /* PreviewSyncService.swift */,
+			);
+			path = Sync;
+			sourceTree = "<group>";
+		};
+		A100000120000001000000A7 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A10000002000000100000040 /* Info.plist */,
+				A10000002000000100000042 /* Assets.xcassets */,
+				A10000002000000100000043 /* HiddenGems.entitlements */,
+			);
+			path = Resources;
+			sourceTree = SOURCE_ROOT;
+		};
+		A100000120000001000000A8 /* HiddenGemsTests */ = {
+			isa = PBXGroup;
+			children = (
+				A10000002000000100000030 /* SpotRepositoryTests.swift */,
+			);
+			path = HiddenGemsTests;
+			sourceTree = SOURCE_ROOT;
+		};
+		A100000120000001000000A9 /* HiddenGemsUITests */ = {
+			isa = PBXGroup;
+			children = (
+				A10000002000000100000031 /* HiddenGemsUITests.swift */,
+			);
+			path = HiddenGemsUITests;
+			sourceTree = SOURCE_ROOT;
+		};
+		A100000120000001000000AF /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				A10000002000000100000044 /* Config.xcconfig */,
+				A10000002000000100000045 /* Config.Debug.xcconfig */,
+				A10000002000000100000046 /* Config.Release.xcconfig */,
+			);
+			name = Config;
+			sourceTree = SOURCE_ROOT;
+		};
+		A100000120000001000000FF = {
+			isa = PBXGroup;
+			children = (
+				A10000012000000100000090 /* App */,
+				A10000012000000100000091 /* Features */,
+				A10000012000000100000096 /* Model */,
+				A10000012000000100000097 /* Persistence */,
+				A10000012000000100000098 /* Services */,
+				A100000120000001000000A7 /* Resources */,
+				A100000120000001000000A8 /* HiddenGemsTests */,
+				A100000120000001000000A9 /* HiddenGemsUITests */,
+				A100000120000001000000AF /* Config */,
+			);
+			sourceTree = SOURCE_ROOT;
+		};
+		A95B5BA22EB20B8F000B4F20 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				A95B5B9C2EB20B8F000B4F20 /* CustomTabBar.swift */,
+				A95B5B9D2EB20B8F000B4F20 /* FloatingCard.swift */,
+				A95B5B9E2EB20B8F000B4F20 /* LoadingView.swift */,
+				A95B5B9F2EB20B8F000B4F20 /* PillButton.swift */,
+				A95B5BA02EB20B8F000B4F20 /* RoundedImageView.swift */,
+				A95B5BA12EB20B8F000B4F20 /* SearchBarView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		A95B5BA72EB20B8F000B4F20 /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				A95B5BA32EB20B8F000B4F20 /* AppTheme.swift */,
+				A95B5BA42EB20B8F000B4F20 /* Colors.swift */,
+				A95B5BA52EB20B8F000B4F20 /* Spacing.swift */,
+				A95B5BA62EB20B8F000B4F20 /* Typography.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		A95B5BA82EB20B8F000B4F20 /* Design */ = {
+			isa = PBXGroup;
+			children = (
+				A95B5BA22EB20B8F000B4F20 /* Components */,
+				A95B5BA72EB20B8F000B4F20 /* Theme */,
+			);
+			path = Design;
+			sourceTree = "<group>";
+		};
+		A95B5BB42EB20BBE000B4F20 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A95B5BB32EB20BBE000B4F20 /* CollectionsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A95B5BB52EB20BBE000B4F20 /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				A95B5BB42EB20BBE000B4F20 /* Views */,
+			);
+			path = Profile;
+			sourceTree = "<group>";
+		};
+		A95B5BB82EB20BD7000B4F20 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A95B5BB72EB20BD7000B4F20 /* CreateSpotViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		A95B5BBB2EB20BD7000B4F20 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A95B5BB92EB20BD7000B4F20 /* CreateSpotView.swift */,
+				A95B5BBA2EB20BD7000B4F20 /* ImagePicker.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A95B5BBC2EB20BD7000B4F20 /* CreateSpot */ = {
+			isa = PBXGroup;
+			children = (
+				A95B5BB82EB20BD7000B4F20 /* ViewModels */,
+				A95B5BBB2EB20BD7000B4F20 /* Views */,
+			);
+			path = CreateSpot;
+			sourceTree = "<group>";
+		};
+		A95B5BC12EB20BDD000B4F20 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A95B5BC02EB20BDD000B4F20 /* SpotDetailViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		A95B5BC32EB20BDD000B4F20 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A95B5BC22EB20BDD000B4F20 /* SpotDetailView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A95B5BC42EB20BDD000B4F20 /* SpotDetail */ = {
+			isa = PBXGroup;
+			children = (
+				A95B5BC12EB20BDD000B4F20 /* ViewModels */,
+				A95B5BC32EB20BDD000B4F20 /* Views */,
+			);
+			path = SpotDetail;
+			sourceTree = "<group>";
+		};
+		A95B5BC82EB20BEA000B4F20 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				A95B5BC72EB20BEA000B4F20 /* SpotMapMarker.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		A95B5BC92EB20BEA000B4F20 /* Map */ = {
+			isa = PBXGroup;
+			children = (
+				A95B5BC82EB20BEA000B4F20 /* Components */,
+			);
+			path = Map;
+			sourceTree = "<group>";
+		};
+		A95B5BCC2EB20C48000B4F20 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A95B5BCB2EB20C48000B4F20 /* HomeView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A95B5BCF2EB20C82000B4F20 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				A95B5BCE2EB20C82000B4F20 /* MainAppView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A10000012000000100000070 /* HiddenGems */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A100000120000001000000C0 /* Build configuration list for PBXNativeTarget "HiddenGems" */;
+			buildPhases = (
+				A10000012000000100000080 /* Sources */,
+				A10000012000000100000060 /* Frameworks */,
+				A10000012000000100000081 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HiddenGems;
+			productName = HiddenGems;
+			productType = "com.apple.product-type.application";
+		};
+		A10000012000000100000071 /* HiddenGemsTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A100000120000001000000C1 /* Build configuration list for PBXNativeTarget "HiddenGemsTests" */;
+			buildPhases = (
+				A10000012000000100000082 /* Sources */,
+				A10000012000000100000061 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A10000012000000100000052 /* PBXTargetDependency */,
+			);
+			name = HiddenGemsTests;
+			productName = HiddenGemsTests;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		A10000012000000100000072 /* HiddenGemsUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A100000120000001000000C2 /* Build configuration list for PBXNativeTarget "HiddenGemsUITests" */;
+			buildPhases = (
+				A10000012000000100000083 /* Sources */,
+				A10000012000000100000062 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A10000012000000100000053 /* PBXTargetDependency */,
+			);
+			name = HiddenGemsUITests;
+			productName = HiddenGemsUITests;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A1000001200000010000FFF0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1620;
+				ORGANIZATIONNAME = HiddenGems;
+				TargetAttributes = {
+					A10000012000000100000070 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = A100000120000001000000C3 /* Build configuration list for PBXProject "HiddenGems" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A100000120000001000000FF;
+			productRefGroup = A100000120000001000000FF;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A10000012000000100000070 /* HiddenGems */,
+				A10000012000000100000071 /* HiddenGemsTests */,
+				A10000012000000100000072 /* HiddenGemsUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A10000012000000100000081 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000012000000100000042 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A10000012000000100000080 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000012000000100000001 /* HiddenGemsApp.swift in Sources */,
+				A10000012000000100000002 /* AppEnvironment.swift in Sources */,
+				A95B5BB62EB20BBE000B4F20 /* CollectionsView.swift in Sources */,
+				A10000012000000100000003 /* AppEnvironment+Preview.swift in Sources */,
+				A95B5BA92EB20B8F000B4F20 /* SearchBarView.swift in Sources */,
+				A95B5BAA2EB20B8F000B4F20 /* RoundedImageView.swift in Sources */,
+				A95B5BAB2EB20B8F000B4F20 /* AppTheme.swift in Sources */,
+				A95B5BAC2EB20B8F000B4F20 /* PillButton.swift in Sources */,
+				A95B5BAD2EB20B8F000B4F20 /* CustomTabBar.swift in Sources */,
+				A95B5BAE2EB20B8F000B4F20 /* Typography.swift in Sources */,
+				A95B5BAF2EB20B8F000B4F20 /* Spacing.swift in Sources */,
+				A95B5BB02EB20B8F000B4F20 /* Colors.swift in Sources */,
+				A95B5BB12EB20B8F000B4F20 /* FloatingCard.swift in Sources */,
+				A95B5BBD2EB20BD7000B4F20 /* CreateSpotViewModel.swift in Sources */,
+				A95B5BBE2EB20BD7000B4F20 /* CreateSpotView.swift in Sources */,
+				A95B5BBF2EB20BD7000B4F20 /* ImagePicker.swift in Sources */,
+				A95B5BB22EB20B8F000B4F20 /* LoadingView.swift in Sources */,
+				A95B5BCA2EB20BEA000B4F20 /* SpotMapMarker.swift in Sources */,
+				A10000012000000100000010 /* HomeTabView.swift in Sources */,
+				A10000012000000100000011 /* HomeViewModel.swift in Sources */,
+				A10000012000000100000012 /* HomeMapView.swift in Sources */,
+				A10000012000000100000013 /* QuickAddViewModel.swift in Sources */,
+				A10000012000000100000014 /* QuickAddView.swift in Sources */,
+				A10000012000000100000015 /* FloatingActionButton.swift in Sources */,
+				A10000012000000100000016 /* SettingsView.swift in Sources */,
+				A10000012000000100000017 /* SettingsViewModel.swift in Sources */,
+				A10000012000000100000018 /* GroupListView.swift in Sources */,
+				A10000012000000100000019 /* GroupListViewModel.swift in Sources */,
+				A1000001200000010000001A /* OnboardingView.swift in Sources */,
+				A1000001200000010000001B /* Spot.swift in Sources */,
+				A1000001200000010000001C /* Group.swift in Sources */,
+				A1000001200000010000001D /* Setting.swift in Sources */,
+				A1000001200000010000001E /* PersistenceController.swift in Sources */,
+				A1000001200000010000001F /* SpotEntity+Mapping.swift in Sources */,
+				A10000012000000100000020 /* GroupEntity+Mapping.swift in Sources */,
+				A95B5BC52EB20BDD000B4F20 /* SpotDetailViewModel.swift in Sources */,
+				A95B5BC62EB20BDD000B4F20 /* SpotDetailView.swift in Sources */,
+				A10000012000000100000021 /* SettingEntity+Mapping.swift in Sources */,
+				A10000012000000100000023 /* HybridAIConfiguration.swift in Sources */,
+				A95B5BD02EB20C82000B4F20 /* MainAppView.swift in Sources */,
+				A10000012000000100000024 /* HybridAIService.swift in Sources */,
+				A10000012000000100000025 /* AIJobQueue.swift in Sources */,
+				A95B5BCD2EB20C48000B4F20 /* HomeView.swift in Sources */,
+				A10000012000000100000026 /* MediaService.swift in Sources */,
+				A10000012000000100000027 /* LocationService.swift in Sources */,
+				A10000012000000100000028 /* VectorStore.swift in Sources */,
+				A10000012000000100000029 /* SpotRepository.swift in Sources */,
+				A1000001200000010000002A /* GroupRepository.swift in Sources */,
+				A1000001200000010000002B /* SyncConfiguration.swift in Sources */,
+				A1000001200000010000002C /* SyncService.swift in Sources */,
+				A1000001200000010000002D /* SyncCoordinator.swift in Sources */,
+				A1000001200000010000002E /* PreviewSyncService.swift in Sources */,
+				A10000012000000100000041 /* HiddenGems.xcdatamodeld in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000012000000100000082 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000012000000100000030 /* SpotRepositoryTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000012000000100000083 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000012000000100000031 /* HiddenGemsUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A10000012000000100000052 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A10000012000000100000070 /* HiddenGems */;
+			targetProxy = A10000012000000100000050 /* PBXContainerItemProxy */;
+		};
+		A10000012000000100000053 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A10000012000000100000071 /* HiddenGemsTests */;
+			targetProxy = A10000012000000100000051 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		A100000120000001000000D0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A10000002000000100000045 /* Config.Debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = Resources/HiddenGems.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = C6N8XD9F9R;
+				INFOPLIST_FILE = Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = de.tristankennedy.hiddengems;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A100000120000001000000D1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A10000002000000100000046 /* Config.Release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = Resources/HiddenGems.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = C6N8XD9F9R;
+				INFOPLIST_FILE = Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = de.tristankennedy.hiddengems;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A100000120000001000000D2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				DEAD_CODE_STRIPPING = YES;
+				INFOPLIST_FILE = HiddenGemsTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.HiddenGemsTests;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		A100000120000001000000D3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				DEAD_CODE_STRIPPING = YES;
+				INFOPLIST_FILE = HiddenGemsTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.HiddenGemsTests;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		A100000120000001000000D4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				DEAD_CODE_STRIPPING = YES;
+				INFOPLIST_FILE = HiddenGemsUITests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.HiddenGemsUITests;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		A100000120000001000000D5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				DEAD_CODE_STRIPPING = YES;
+				INFOPLIST_FILE = HiddenGemsUITests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.HiddenGemsUITests;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		A100000120000001000000D6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		A100000120000001000000D7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A100000120000001000000C0 /* Build configuration list for PBXNativeTarget "HiddenGems" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A100000120000001000000D0 /* Debug */,
+				A100000120000001000000D1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A100000120000001000000C1 /* Build configuration list for PBXNativeTarget "HiddenGemsTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A100000120000001000000D2 /* Debug */,
+				A100000120000001000000D3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A100000120000001000000C2 /* Build configuration list for PBXNativeTarget "HiddenGemsUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A100000120000001000000D4 /* Debug */,
+				A100000120000001000000D5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A100000120000001000000C3 /* Build configuration list for PBXProject "HiddenGems" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A100000120000001000000D6 /* Debug */,
+				A100000120000001000000D7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A1000001200000010000FFF0 /* Project object */;
+}

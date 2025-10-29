@@ -1,0 +1,19 @@
+.DS_Store
+DerivedData/
+xcuserdata/
+.idea/
+.env
+.cloudflared/
+node_modules/
+wrangler.toml.local
+
+# Swift Package Manager
+.build/
+
+# Core Data
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+build/
+*.xcworkspace
+DerivedData/

@@ -1,0 +1,4 @@
+#include "Config.xcconfig"
+API_BASE_URL = https://api.example.com
+APP_SYNC_TOKEN = prod-token
+SWIFT_OPTIMIZATION_LEVEL = -O

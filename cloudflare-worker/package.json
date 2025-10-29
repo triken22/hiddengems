@@ -1,0 +1,18 @@
+{
+  "name": "hidden-gems-worker",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\""
+  },
+  "dependencies": {
+    "hono": "^3.11.8"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240129.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.3.3"
+  }
+}
