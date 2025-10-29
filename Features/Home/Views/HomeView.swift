@@ -3,6 +3,7 @@ import SwiftUI
 /// Main home view with photo-centric feed (replaces HomeTabView)
 struct HomeView: View {
     @EnvironmentObject private var viewModel: HomeViewModel
+    @EnvironmentObject private var gemDrawer: GemDrawerController
     @State private var showingFilters = false
     @State private var showingNotifications = false
     @State private var isTabBarHidden = false
@@ -78,13 +79,16 @@ struct HomeView: View {
                                 ],
                                 spacing: AppSpacing.lg
                             ) {
-                                ForEach(viewModel.filteredSpots) { spot in
-                                    NavigationLink(destination: SpotDetailView(spot: spot)
-                                        .environmentObject(viewModel)) {
-                                        SpotCardView(spot: spot)
-                                            .environmentObject(viewModel)
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
+                                ForEach(Array(viewModel.filteredSpots.enumerated()), id: \.element.id) { index, spot in
+                                    SpotCardView(spot: spot)
+                                        .environmentObject(viewModel)
+                                        .onTapGesture {
+                                            gemDrawer.present(
+                                                spots: viewModel.filteredSpots,
+                                                startAt: index,
+                                                source: .explore
+                                            )
+                                        }
                                 }
                             }
                             .padding(.horizontal, AppSpacing.md)
@@ -247,32 +251,36 @@ struct SpotCardView: View {
                 
                 // Bottom info row
                 HStack(alignment: .center, spacing: AppSpacing.md) {
-                    // Rating
-                    HStack(spacing: 3) {
-                        Image(systemName: "star.fill")
-                            .font(.system(size: 11))
-                            .foregroundColor(AppColors.warning)
-                        Text("4.8")
-                            .font(AppTypography.ratingText)
-                            .fontWeight(.semibold)
-                            .foregroundColor(AppColors.textPrimary)
+                    // Rating (only show if rating > 0)
+                    if spot.globalRating > 0 {
+                        HStack(spacing: 3) {
+                            Image(systemName: "star.fill")
+                                .font(.system(size: 11))
+                                .foregroundColor(AppColors.warning)
+                            Text(String(format: "%.1f", spot.globalRating))
+                                .font(AppTypography.ratingText)
+                                .fontWeight(.semibold)
+                                .foregroundColor(AppColors.textPrimary)
+                        }
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel("Rating \(String(format: "%.1f", spot.globalRating)) stars")
                     }
-                    .accessibilityElement(children: .combine)
-                    .accessibilityLabel("Rating 4.8 stars")
                     
                     Spacer()
                     
-                    // Distance
-                    HStack(spacing: 4) {
-                        Image(systemName: "location.fill")
-                            .font(.system(size: 10))
-                            .foregroundColor(AppColors.textSecondary)
-                        Text("2.4 km")
-                            .font(AppTypography.caption)
-                            .foregroundColor(AppColors.textSecondary)
+                    // Distance (only show if available)
+                    if let distance = spot.formattedDistance {
+                        HStack(spacing: 4) {
+                            Image(systemName: "location.fill")
+                                .font(.system(size: 10))
+                                .foregroundColor(AppColors.textSecondary)
+                            Text(distance)
+                                .font(AppTypography.caption)
+                                .foregroundColor(AppColors.textSecondary)
+                        }
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel("Distance \(distance)")
                     }
-                    .accessibilityElement(children: .combine)
-                    .accessibilityLabel("Distance 2.4 kilometers")
                 }
             }
             .padding(AppSpacing.md)

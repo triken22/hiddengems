@@ -10,6 +10,7 @@ struct HiddenGemsApp: App {
                 .environmentObject(environment.homeViewModel)
                 .environmentObject(environment.groupListViewModel)
                 .environmentObject(environment.settingsViewModel)
+                .environmentObject(environment.gemDrawer)
                 .environment(\.managedObjectContext, PersistenceController.shared.container.viewContext)
         }
     }

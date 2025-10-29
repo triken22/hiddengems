@@ -64,6 +64,9 @@ struct SpotDetailView: View {
                         // Details
                         SpotDetailsView(spot: spot)
                         
+                        // Rating Editor
+                        RatingEditorView(spot: spot)
+                        
                         // Reviews (placeholder)
                         ReviewsSectionView(spot: spot)
                         
@@ -267,15 +270,21 @@ struct SpotHeaderView: View {
                         Image(systemName: "star.fill")
                             .font(.caption)
                             .foregroundColor(AppColors.warning)
-                        Text("4.8")
+                        Text(spot.globalRating > 0 ? String(format: "%.1f", spot.globalRating) : "No rating")
                             .font(AppTypography.headline)
                             .fontWeight(.semibold)
                             .foregroundColor(AppColors.textPrimary)
                     }
                     
-                    Text("(24 reviews)")
-                        .font(AppTypography.caption)
-                        .foregroundColor(AppColors.textSecondary)
+                    if spot.globalRating > 0 {
+                        Text("Global rating")
+                            .font(AppTypography.caption)
+                            .foregroundColor(AppColors.textSecondary)
+                    } else {
+                        Text("Tap to rate")
+                            .font(AppTypography.caption)
+                            .foregroundColor(AppColors.primary)
+                    }
                 }
             }
             
@@ -559,6 +568,132 @@ struct NavigationBarView: View {
     }
 }
 
+// MARK: - Rating Editor View
+struct RatingEditorView: View {
+    let spot: Spot
+    @EnvironmentObject private var viewModel: HomeViewModel
+    @State private var currentRating: Double = 0
+    @State private var isUpdating = false
+    @State private var showSuccessMessage = false
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.md) {
+            Text("Rate this spot")
+                .font(AppTypography.headline)
+                .fontWeight(.semibold)
+                .foregroundColor(AppColors.textPrimary)
+            
+            VStack(spacing: AppSpacing.md) {
+                // Star Rating Display
+                HStack(spacing: 4) {
+                    ForEach(1...5, id: \.self) { index in
+                        Image(systemName: index <= Int(currentRating) ? "star.fill" : "star")
+                            .font(.title2)
+                            .foregroundColor(AppColors.warning)
+                    }
+                    
+                    Text(String(format: "%.1f", currentRating))
+                        .font(AppTypography.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(AppColors.textPrimary)
+                        .padding(.leading, AppSpacing.sm)
+                }
+                
+                // Rating Slider
+                VStack(spacing: AppSpacing.sm) {
+                    HStack {
+                        Text("0")
+                            .font(AppTypography.caption)
+                            .foregroundColor(AppColors.textSecondary)
+                        
+                        Slider(value: $currentRating, in: 0...5, step: 0.5)
+                            .accentColor(AppColors.primary)
+                        
+                        Text("5")
+                            .font(AppTypography.caption)
+                            .foregroundColor(AppColors.textSecondary)
+                    }
+                    
+                    Text("Slide to adjust rating")
+                        .font(AppTypography.caption)
+                        .foregroundColor(AppColors.textSecondary)
+                }
+                
+                // Save Button
+                Button(action: {
+                    saveRating()
+                }) {
+                    HStack {
+                        if isUpdating {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        } else {
+                            Image(systemName: "star.fill")
+                        }
+                        Text(isUpdating ? "Saving..." : "Save Rating")
+                    }
+                    .font(AppTypography.buttonText)
+                    .foregroundColor(AppColors.textInverse)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, AppSpacing.md)
+                    .background(currentRating > 0 ? AppColors.primary : AppColors.border)
+                    .cornerRadius(AppSpacing.buttonCornerRadius)
+                }
+                .disabled(currentRating == 0 || isUpdating)
+                
+                if showSuccessMessage {
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(AppColors.success)
+                        Text("Rating saved successfully!")
+                            .font(AppTypography.caption)
+                            .foregroundColor(AppColors.success)
+                    }
+                    .transition(.opacity)
+                }
+            }
+            .padding(AppSpacing.md)
+            .background(AppColors.surface)
+            .cornerRadius(AppSpacing.buttonCornerRadius)
+        }
+        .onAppear {
+            currentRating = spot.globalRating
+        }
+    }
+    
+    private func saveRating() {
+        guard currentRating > 0 else { return }
+        
+        isUpdating = true
+        showSuccessMessage = false
+        
+        Task {
+            do {
+                try await viewModel.spotRepository.updateRating(spotId: spot.id, newRating: currentRating)
+                
+                await MainActor.run {
+                    isUpdating = false
+                    showSuccessMessage = true
+                    
+                    // Hide success message after 2 seconds
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        withAnimation {
+                            showSuccessMessage = false
+                        }
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    isUpdating = false
+                    // Handle error - could show an alert
+                    print("Error updating rating: \(error)")
+                }
+            }
+        }
+    }
+}
+
 // MARK: - Preview
 #if DEBUG
 struct SpotDetailView_Previews: PreviewProvider {
@@ -579,13 +714,17 @@ struct SpotDetailView_Previews: PreviewProvider {
         groupId: nil,
         userId: nil,
         deleted: false,
+        saved: false,
         version: 1,
+        globalRating: 4.5,
+        ratingUpdatedAt: Date(),
         createdAt: Date(),
         updatedAt: Date()
     )
     
     static var previews: some View {
         SpotDetailView(spot: sampleSpot)
+            .environmentObject(AppEnvironment().homeViewModel)
     }
 }
 #endif
