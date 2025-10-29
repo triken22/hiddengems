@@ -85,6 +85,21 @@ struct CreateSpotView: View {
                     }
                 }
             }
+            .overlay {
+                if viewModel.saveSuccess {
+                    SuccessOverlayView {
+                        dismiss()
+                    }
+                }
+            }
+            .onChange(of: viewModel.saveSuccess) { _, isSuccess in
+                if isSuccess {
+                    // Auto-dismiss after showing success animation
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                        dismiss()
+                    }
+                }
+            }
         }
     }
 }
@@ -982,3 +997,60 @@ struct CreateSpotView_Previews: PreviewProvider {
     }
 }
 #endif
+
+// MARK: - Success Overlay
+struct SuccessOverlayView: View {
+    let onDismiss: () -> Void
+    @State private var scale: CGFloat = 0.5
+    @State private var opacity: Double = 0
+    
+    var body: some View {
+        ZStack {
+            // Blur background
+            Color.black.opacity(0.4)
+                .ignoresSafeArea()
+            
+            // Success card
+            VStack(spacing: AppSpacing.lg) {
+                // Checkmark animation
+                ZStack {
+                    Circle()
+                        .fill(AppColors.success)
+                        .frame(width: 80, height: 80)
+                    
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 40, weight: .bold))
+                        .foregroundColor(.white)
+                }
+                .scaleEffect(scale)
+                
+                VStack(spacing: AppSpacing.sm) {
+                    Text("Success!")
+                        .font(AppTypography.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(AppColors.textPrimary)
+                    
+                    Text("Your hidden gem has been saved")
+                        .font(AppTypography.body)
+                        .foregroundColor(AppColors.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
+                .opacity(opacity)
+            }
+            .padding(AppSpacing.xl)
+            .background(AppColors.surface)
+            .cornerRadius(AppSpacing.cardCornerRadius)
+            .shadow(color: AppColors.shadow, radius: 20, x: 0, y: 10)
+            .padding(AppSpacing.xl)
+        }
+        .onAppear {
+            // Animate in
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+                scale = 1.0
+            }
+            withAnimation(.easeIn(duration: 0.3).delay(0.2)) {
+                opacity = 1.0
+            }
+        }
+    }
+}

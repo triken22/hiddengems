@@ -115,13 +115,25 @@ struct SpotImage: Hashable, Identifiable, Codable {
     let id: UUID
     let localIdentifier: String?
     let remoteURL: URL?
-    let localImage: UIImage?
+    let imageData: Data? // Stores JPEG data for persistence
     
-    init(id: UUID, localIdentifier: String? = nil, remoteURL: URL? = nil, localImage: UIImage? = nil) {
+    var localImage: UIImage? {
+        if let data = imageData {
+            return UIImage(data: data)
+        }
+        return nil
+    }
+    
+    init(id: UUID, localIdentifier: String? = nil, remoteURL: URL? = nil, localImage: UIImage? = nil, imageData: Data? = nil) {
         self.id = id
         self.localIdentifier = localIdentifier
         self.remoteURL = remoteURL
-        self.localImage = localImage
+        // Convert UIImage to Data if provided
+        if let image = localImage, imageData == nil {
+            self.imageData = image.jpegData(compressionQuality: 0.8)
+        } else {
+            self.imageData = imageData
+        }
     }
     
     // Custom Hashable implementation to exclude UIImage
@@ -141,7 +153,7 @@ struct SpotImage: Hashable, Identifiable, Codable {
     }
     
     enum CodingKeys: String, CodingKey {
-        case id, localIdentifier, remoteURL
+        case id, localIdentifier, remoteURL, imageData
     }
     
     init(from decoder: Decoder) throws {
@@ -149,7 +161,7 @@ struct SpotImage: Hashable, Identifiable, Codable {
         id = try container.decode(UUID.self, forKey: .id)
         localIdentifier = try container.decodeIfPresent(String.self, forKey: .localIdentifier)
         remoteURL = try container.decodeIfPresent(URL.self, forKey: .remoteURL)
-        localImage = nil // UIImage is not Codable, so we don't decode it
+        imageData = try container.decodeIfPresent(Data.self, forKey: .imageData)
     }
     
     func encode(to encoder: Encoder) throws {
@@ -157,6 +169,6 @@ struct SpotImage: Hashable, Identifiable, Codable {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(localIdentifier, forKey: .localIdentifier)
         try container.encodeIfPresent(remoteURL, forKey: .remoteURL)
-        // UIImage is not Codable, so we don't encode it
+        try container.encodeIfPresent(imageData, forKey: .imageData)
     }
 }

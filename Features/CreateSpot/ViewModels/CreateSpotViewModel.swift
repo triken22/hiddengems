@@ -15,6 +15,7 @@ final class CreateSpotViewModel: ObservableObject {
     @Published var selectedCategory = ""
     @Published var suggestedTags: [String] = []
     @Published var isSaving = false
+    @Published var saveSuccess = false
     @Published var errorMessage: String?
     
     let totalSteps = 5
@@ -183,10 +184,11 @@ final class CreateSpotViewModel: ObservableObject {
                 
                 await MainActor.run {
                     self.isSaving = false
+                    self.saveSuccess = true // Trigger success state
+                    
                     // Success - add haptic feedback
                     let successFeedback = UINotificationFeedbackGenerator()
                     successFeedback.notificationOccurred(.success)
-                    // Success - would typically dismiss the view or show success message
                 }
                 
             } catch {

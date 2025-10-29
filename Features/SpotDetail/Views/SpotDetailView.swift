@@ -85,8 +85,8 @@ struct SpotDetailView: View {
                 dismiss()
             }
         }
-        .navigationBarHidden(true)
-        .statusBarHidden(false)
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle("")
         .onAppear {
             isSaved = spot.saved
         }
@@ -139,17 +139,67 @@ struct PhotoGalleryView: View {
         ZStack(alignment: .bottom) {
             // Main Image
             TabView(selection: $selectedIndex) {
-                ForEach(Array(images.enumerated()), id: \.offset) { index, image in
-                    RoundedImageView(
-                        imageURL: image.remoteURL,
-                        placeholder: "photo",
-                        cornerRadius: 0,
-                        aspectRatio: nil,
-                        contentMode: .fill
-                    )
-                    .frame(height: imageHeight)
-                    .clipped()
-                    .tag(index)
+                ForEach(Array(images.enumerated()), id: \.offset) { index, spotImage in
+                    if let localImage = spotImage.localImage {
+                        // Show local image
+                        Image(uiImage: localImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(height: imageHeight)
+                            .clipped()
+                            .tag(index)
+                    } else if let remoteURL = spotImage.remoteURL {
+                        // Show remote image
+                        AsyncImage(url: remoteURL) { phase in
+                            switch phase {
+                            case .empty:
+                                Rectangle()
+                                    .fill(AppColors.surface)
+                                    .frame(height: imageHeight)
+                                    .overlay(ProgressView().tint(AppColors.primary))
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(height: imageHeight)
+                                    .clipped()
+                            case .failure:
+                                Rectangle()
+                                    .fill(AppColors.surface)
+                                    .frame(height: imageHeight)
+                                    .overlay(
+                                        Image(systemName: "photo")
+                                            .font(.system(size: 60))
+                                            .foregroundColor(AppColors.textSecondary)
+                                    )
+                            @unknown default:
+                                EmptyView()
+                            }
+                        }
+                        .tag(index)
+                    } else {
+                        // Placeholder
+                        Rectangle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [AppColors.primary.opacity(0.3), AppColors.primary.opacity(0.1)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(height: imageHeight)
+                            .overlay(
+                                VStack(spacing: AppSpacing.md) {
+                                    Image(systemName: "camera.fill")
+                                        .font(.system(size: 60))
+                                        .foregroundColor(AppColors.primary.opacity(0.6))
+                                    Text("No Photo")
+                                        .font(AppTypography.body)
+                                        .foregroundColor(AppColors.textSecondary)
+                                }
+                            )
+                            .tag(index)
+                    }
                 }
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
@@ -192,11 +242,14 @@ struct SpotHeaderView: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: AppSpacing.xs) {
                     Text(spot.title)
-                        .appFont(.title1, color: AppColors.textPrimary)
+                        .font(AppTypography.title1)
+                        .fontWeight(.bold)
+                        .foregroundColor(AppColors.textPrimary)
                     
                     if let subtitle = spot.subtitle {
                         Text(subtitle)
-                            .appFont(.title3, color: AppColors.textSecondary)
+                            .font(AppTypography.title3)
+                            .foregroundColor(AppColors.textSecondary)
                     }
                 }
                 
@@ -209,11 +262,14 @@ struct SpotHeaderView: View {
                             .font(.caption)
                             .foregroundColor(AppColors.warning)
                         Text("4.8")
-                            .appFont(.headline, color: AppColors.textPrimary)
+                            .font(AppTypography.headline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(AppColors.textPrimary)
                     }
                     
                     Text("(24 reviews)")
-                        .appFont(.caption, color: AppColors.textSecondary)
+                        .font(AppTypography.caption)
+                        .foregroundColor(AppColors.textSecondary)
                 }
             }
             
@@ -223,7 +279,8 @@ struct SpotHeaderView: View {
                     HStack(spacing: AppSpacing.sm) {
                         ForEach(spot.tags, id: \.self) { tag in
                             Text(tag)
-                                .appFont(.caption, color: AppColors.primary)
+                                .font(AppTypography.caption)
+                                .foregroundColor(AppColors.primary)
                                 .padding(.horizontal, AppSpacing.sm)
                                 .padding(.vertical, AppSpacing.xs)
                                 .background(AppColors.primary.opacity(0.1))
@@ -246,10 +303,13 @@ struct SpotDetailsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.md) {
             Text("About this place")
-                .appFont(.headline, color: AppColors.textPrimary)
+                .font(AppTypography.headline)
+                .fontWeight(.semibold)
+                .foregroundColor(AppColors.textPrimary)
             
             Text(spot.details)
-                .appFont(.body, color: AppColors.textSecondary)
+                .font(AppTypography.body)
+                .foregroundColor(AppColors.textSecondary)
                 .lineLimit(isExpanded ? nil : 3)
             
             if spot.details.count > 150 {
@@ -258,13 +318,17 @@ struct SpotDetailsView: View {
                         isExpanded.toggle()
                     }
                 }
-                .appFont(.callout, color: AppColors.primary)
+                .font(AppTypography.callout)
+                .fontWeight(.medium)
+                .foregroundColor(AppColors.primary)
             }
             
             // Amenities (placeholder)
             VStack(alignment: .leading, spacing: AppSpacing.sm) {
                 Text("What this place offers")
-                    .appFont(.headline, color: AppColors.textPrimary)
+                    .font(AppTypography.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(AppColors.textPrimary)
                 
                 LazyVGrid(columns: [
                     GridItem(.flexible()),
@@ -276,7 +340,8 @@ struct SpotDetailsView: View {
                                 .foregroundColor(AppColors.success)
                                 .font(.caption)
                             Text(amenity)
-                                .appFont(.caption, color: AppColors.textSecondary)
+                                .font(AppTypography.caption)
+                                .foregroundColor(AppColors.textSecondary)
                         }
                     }
                 }
@@ -293,14 +358,18 @@ struct ReviewsSectionView: View {
         VStack(alignment: .leading, spacing: AppSpacing.md) {
             HStack {
                 Text("Reviews")
-                    .appFont(.headline, color: AppColors.textPrimary)
+                    .font(AppTypography.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(AppColors.textPrimary)
                 
                 Spacer()
                 
                 Button("See all") {
                     // Navigate to all reviews
                 }
-                .appFont(.callout, color: AppColors.primary)
+                .font(AppTypography.callout)
+                .fontWeight(.medium)
+                .foregroundColor(AppColors.primary)
             }
             
             // Sample review
@@ -311,12 +380,16 @@ struct ReviewsSectionView: View {
                         .frame(width: 40, height: 40)
                         .overlay(
                             Text("A")
-                                .appFont(.callout, weight: .semibold, color: AppColors.textPrimary)
+                                .font(AppTypography.callout)
+                                .fontWeight(.semibold)
+                                .foregroundColor(AppColors.textPrimary)
                         )
                     
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Alex M.")
-                            .appFont(.callout, weight: .semibold, color: AppColors.textPrimary)
+                            .font(AppTypography.callout)
+                            .fontWeight(.semibold)
+                            .foregroundColor(AppColors.textPrimary)
                         
                         HStack(spacing: 2) {
                             ForEach(0..<5) { _ in
@@ -330,11 +403,13 @@ struct ReviewsSectionView: View {
                     Spacer()
                     
                     Text("2 days ago")
-                        .appFont(.caption, color: AppColors.textTertiary)
+                        .font(AppTypography.caption)
+                        .foregroundColor(AppColors.textTertiary)
                 }
                 
                 Text("Amazing hidden gem! The atmosphere is incredible and the staff is super friendly. Definitely coming back.")
-                    .appFont(.body, color: AppColors.textSecondary)
+                    .font(AppTypography.body)
+                    .foregroundColor(AppColors.textSecondary)
             }
             .padding(AppSpacing.md)
             .background(AppColors.surface)
@@ -350,7 +425,9 @@ struct MapSectionView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.md) {
             Text("Location")
-                .appFont(.headline, color: AppColors.textPrimary)
+                .font(AppTypography.headline)
+                .fontWeight(.semibold)
+                .foregroundColor(AppColors.textPrimary)
             
             // Map placeholder
             RoundedRectangle(cornerRadius: AppSpacing.buttonCornerRadius)
@@ -362,13 +439,15 @@ struct MapSectionView: View {
                             .font(.title)
                             .foregroundColor(AppColors.textTertiary)
                         Text("Map View")
-                            .appFont(.callout, color: AppColors.textSecondary)
+                            .font(AppTypography.callout)
+                            .foregroundColor(AppColors.textSecondary)
                     }
                 )
             
             if let address = spot.address {
                 Text(address)
-                    .appFont(.body, color: AppColors.textSecondary)
+                    .font(AppTypography.body)
+                    .foregroundColor(AppColors.textSecondary)
             }
         }
     }

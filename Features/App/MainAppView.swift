@@ -22,27 +22,29 @@ struct MainAppView: View {
     ]
     
     var body: some View {
-        TabBarContainer(selectedTab: $selectedTab, tabs: tabs) { tab in
-            switch tab.tag {
-            case 0:
-                HomeView(onNavigateToMap: {
-                    selectedTab = TabItem(title: "Map", icon: "map", selectedIcon: "map.fill", tag: 1)
-                })
-                    .environmentObject(homeViewModel)
-            case 1:
-                ExploreMapView()
-                    .environmentObject(homeViewModel)
-            case 2:
-                SavedView(onNavigateToExplore: {
-                    selectedTab = TabItem(title: "Explore", icon: "house", selectedIcon: "house.fill", tag: 0)
-                })
-                    .environmentObject(homeViewModel)
-            case 3:
-                ProfileView()
-                    .environmentObject(homeViewModel)
-            default:
-                HomeView()
-                    .environmentObject(homeViewModel)
+        NavigationStack {
+            TabBarContainer(selectedTab: $selectedTab, tabs: tabs) { tab in
+                switch tab.tag {
+                case 0:
+                    HomeView(onNavigateToMap: {
+                        selectedTab = TabItem(title: "Map", icon: "map", selectedIcon: "map.fill", tag: 1)
+                    })
+                        .environmentObject(homeViewModel)
+                case 1:
+                    ExploreMapView()
+                        .environmentObject(homeViewModel)
+                case 2:
+                    SavedView(onNavigateToExplore: {
+                        selectedTab = TabItem(title: "Explore", icon: "house", selectedIcon: "house.fill", tag: 0)
+                    })
+                        .environmentObject(homeViewModel)
+                case 3:
+                    ProfileView()
+                        .environmentObject(homeViewModel)
+                default:
+                    HomeView()
+                        .environmentObject(homeViewModel)
+                }
             }
         }
         .withAppTheme()
@@ -59,8 +61,7 @@ struct ExploreMapView: View {
     @State private var selectedCoordinate: CLLocationCoordinate2D? = nil
     
     var body: some View {
-        NavigationStack {
-            ZStack(alignment: .bottom) {
+        ZStack(alignment: .bottom) {
                 Map(coordinateRegion: $viewModel.region,
                     annotationItems: viewModel.mapSpots) { spot in
                     MapAnnotation(coordinate: spot.coordinate) {
@@ -135,8 +136,7 @@ struct ExploreMapView: View {
                     }
                 }
             }
-        }
-        .sheet(isPresented: $showingAddLocation) {
+            .sheet(isPresented: $showingAddLocation) {
             if let coordinate = selectedCoordinate {
                 NavigationStack {
                     QuickAddView(viewModel: viewModel.quickAddViewModel())
@@ -167,8 +167,7 @@ struct SavedView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            VStack {
+        VStack {
                 if savedSpots.isEmpty {
                     EmptyStateView(
                         icon: "heart",
@@ -198,7 +197,6 @@ struct SavedView: View {
             }
             .navigationTitle("Saved")
             .navigationBarTitleDisplayMode(.large)
-        }
     }
 }
 

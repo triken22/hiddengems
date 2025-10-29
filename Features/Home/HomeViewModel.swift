@@ -1,6 +1,7 @@
 import Foundation
 import MapKit
 import CoreLocation
+import Combine
 
 @MainActor
 final class HomeViewModel: ObservableObject {
@@ -31,6 +32,7 @@ final class HomeViewModel: ObservableObject {
     private let syncCoordinator: SyncCoordinator
     private let mediaService: MediaService
     private let aiService: HybridAIService
+    private var cancellables = Set<AnyCancellable>()
 
     init(spotRepository: SpotRepository,
          groupRepository: GroupRepository,
@@ -48,6 +50,17 @@ final class HomeViewModel: ObservableObject {
         self.aiService = aiService
         self.groupListViewModel = groupListViewModel
         self.settingsViewModel = settingsViewModel
+
+        // Subscribe to spot repository updates for instant reactivity
+        spotRepository.spotsPublisher()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] updatedSpots in
+                guard let self = self else { return }
+                self.spots = updatedSpots
+                self.mapSpots = updatedSpots.filter { !$0.deleted }
+                self.filterSpots()
+            }
+            .store(in: &cancellables)
 
         Task {
             await loadSpots()
