@@ -34,6 +34,11 @@ struct AppColors {
     static let overlayLight = Color.black.opacity(0.2)
     static let overlayDark = Color.black.opacity(0.6)
     
+    // MARK: - Shadow Colors
+    static let shadow = Color.black.opacity(0.1)
+    static let shadowLight = Color.black.opacity(0.05)
+    static let shadowDark = Color.black.opacity(0.2)
+    
     // MARK: - Gradient Colors
     static let primaryGradient = LinearGradient(
         colors: [primary, primaryLight],

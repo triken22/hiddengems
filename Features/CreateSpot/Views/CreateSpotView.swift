@@ -127,114 +127,10 @@ struct PhotoSelectionView: View {
     
     var body: some View {
         VStack(spacing: AppSpacing.lg) {
-            VStack(spacing: AppSpacing.md) {
-                Image(systemName: "camera.fill")
-                    .font(.system(size: 48))
-                    .foregroundColor(AppColors.primary)
-                
-                Text("Add Photos")
-                    .font(AppTypography.title2)
-                    .foregroundColor(AppColors.textPrimary)
-                
-                Text("Show others what makes this place special")
-                    .font(AppTypography.body)
-                    .foregroundColor(AppColors.textSecondary)
-                    .multilineTextAlignment(.center)
-            }
-            .padding(.top, AppSpacing.xxl)
-            
-            if selectedImages.isEmpty {
-                // Photo selection buttons
-                VStack(spacing: AppSpacing.md) {
-                    Button(action: { showingCamera = true }) {
-                        HStack {
-                            Image(systemName: "camera")
-                            Text("Take Photo")
-                        }
-                        .font(AppTypography.buttonText)
-                        .foregroundColor(AppColors.textInverse)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, AppSpacing.md)
-                        .background(AppColors.primary)
-                        .cornerRadius(AppSpacing.buttonCornerRadius)
-                    }
-                    
-                    Button(action: { showingImagePicker = true }) {
-                        HStack {
-                            Image(systemName: "photo.on.rectangle")
-                            Text("Choose from Library")
-                        }
-                        .font(AppTypography.buttonText)
-                        .foregroundColor(AppColors.primary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, AppSpacing.md)
-                        .background(AppColors.primary.opacity(0.1))
-                        .cornerRadius(AppSpacing.buttonCornerRadius)
-                    }
-                }
-                .padding(.horizontal, AppSpacing.lg)
-            } else {
-                // Selected photos grid with reorder support
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: AppSpacing.md) {
-                        ForEach(Array(selectedImages.enumerated()), id: \.offset) { index, image in
-                            ZStack(alignment: .topTrailing) {
-                                Image(uiImage: image)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: 120, height: 120)
-                                    .cornerRadius(AppSpacing.buttonCornerRadius)
-                                    .clipped()
-                                
-                                Button(action: {
-                                    withAnimation(.easeInOut(duration: 0.2)) {
-                                        selectedImages.remove(at: index)
-                                    }
-                                }) {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .font(.title3)
-                                        .foregroundColor(.white)
-                                        .background(Circle().fill(Color.black.opacity(0.6)))
-                                }
-                                .padding(4)
-                            }
-                        }
-                        
-                        // Add more button
-                        Button(action: { showingImagePicker = true }) {
-                            RoundedRectangle(cornerRadius: AppSpacing.buttonCornerRadius)
-                                .stroke(AppColors.border, style: StrokeStyle(lineWidth: 2, dash: [8]))
-                                .frame(width: 120, height: 120)
-                                .overlay(
-                                    VStack {
-                                        Image(systemName: "plus")
-                                            .font(.title2)
-                                        Text("Add More")
-                                            .font(AppTypography.caption)
-                                            .foregroundColor(AppColors.textSecondary)
-                                    }
-                                )
-                        }
-                    }
-                    .padding(.horizontal, AppSpacing.lg)
-                }
-            }
-            
+            headerSection
+            contentSection
             Spacer()
-            
-            // Next button - always visible but disabled when no images
-            Button(action: onNext) {
-                Text("Continue")
-                    .font(AppTypography.buttonText)
-                    .foregroundColor(AppColors.textInverse)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, AppSpacing.md)
-                    .background(selectedImages.isEmpty ? AppColors.border : AppColors.primary)
-                    .cornerRadius(AppSpacing.buttonCornerRadius)
-            }
-            .disabled(selectedImages.isEmpty)
-            .padding(.horizontal, AppSpacing.lg)
-            .padding(.bottom, AppSpacing.lg)
+            continueButton
         }
         .sheet(isPresented: $showingImagePicker) {
             ImagePicker(selectedImages: $selectedImages)
@@ -257,6 +153,134 @@ struct PhotoSelectionView: View {
                 }
             }
         }
+    }
+    
+    private var headerSection: some View {
+        VStack(spacing: AppSpacing.md) {
+            Image(systemName: "camera.fill")
+                .font(.system(size: 48))
+                .foregroundColor(AppColors.primary)
+            
+            Text("Add Photos")
+                .font(AppTypography.title2)
+                .foregroundColor(AppColors.textPrimary)
+            
+            Text("Show others what makes this place special")
+                .font(AppTypography.body)
+                .foregroundColor(AppColors.textSecondary)
+                .multilineTextAlignment(.center)
+        }
+        .padding(.top, AppSpacing.xxl)
+    }
+    
+    @ViewBuilder
+    private var contentSection: some View {
+        if selectedImages.isEmpty {
+            photoSelectionButtons
+        } else {
+            selectedPhotosGrid
+        }
+    }
+    
+    private var photoSelectionButtons: some View {
+        VStack(spacing: AppSpacing.md) {
+            Button(action: { showingCamera = true }) {
+                HStack {
+                    Image(systemName: "camera")
+                    Text("Take Photo")
+                }
+                .font(AppTypography.buttonText)
+                .foregroundColor(AppColors.textInverse)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, AppSpacing.md)
+                .background(AppColors.primary)
+                .cornerRadius(AppSpacing.buttonCornerRadius)
+            }
+            
+            Button(action: { showingImagePicker = true }) {
+                HStack {
+                    Image(systemName: "photo.on.rectangle")
+                    Text("Choose from Library")
+                }
+                .font(AppTypography.buttonText)
+                .foregroundColor(AppColors.primary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, AppSpacing.md)
+                .background(AppColors.primary.opacity(0.1))
+                .cornerRadius(AppSpacing.buttonCornerRadius)
+            }
+        }
+        .padding(.horizontal, AppSpacing.lg)
+    }
+    
+    private var selectedPhotosGrid: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: AppSpacing.md) {
+                ForEach(Array(selectedImages.enumerated()), id: \.offset) { index, image in
+                    photoThumbnail(image: image, index: index)
+                }
+                
+                addMoreButton
+            }
+            .padding(.horizontal, AppSpacing.lg)
+        }
+    }
+    
+    private func photoThumbnail(image: UIImage, index: Int) -> some View {
+        ZStack(alignment: .topTrailing) {
+            Image(uiImage: image)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 120, height: 120)
+                .cornerRadius(AppSpacing.buttonCornerRadius)
+                .clipped()
+            
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    var images = selectedImages
+                    images.remove(at: index)
+                    selectedImages = images
+                }
+            }) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.title3)
+                    .foregroundColor(.white)
+                    .background(Circle().fill(Color.black.opacity(0.6)))
+            }
+            .padding(4)
+        }
+    }
+    
+    private var addMoreButton: some View {
+        Button(action: { showingImagePicker = true }) {
+            RoundedRectangle(cornerRadius: AppSpacing.buttonCornerRadius)
+                .stroke(AppColors.border, style: StrokeStyle(lineWidth: 2, dash: [8]))
+                .frame(width: 120, height: 120)
+                .overlay(
+                    VStack {
+                        Image(systemName: "plus")
+                            .font(.title2)
+                        Text("Add More")
+                            .font(AppTypography.caption)
+                            .foregroundColor(AppColors.textSecondary)
+                    }
+                )
+        }
+    }
+    
+    private var continueButton: some View {
+        Button(action: onNext) {
+            Text("Continue")
+                .font(AppTypography.buttonText)
+                .foregroundColor(AppColors.textInverse)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, AppSpacing.md)
+                .background(selectedImages.isEmpty ? AppColors.border : AppColors.primary)
+                .cornerRadius(AppSpacing.buttonCornerRadius)
+        }
+        .disabled(selectedImages.isEmpty)
+        .padding(.horizontal, AppSpacing.lg)
+        .padding(.bottom, AppSpacing.lg)
     }
 }
 

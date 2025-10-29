@@ -32,7 +32,7 @@ struct SearchBarView: View {
                 .font(AppTypography.searchText)
                 .foregroundColor(AppColors.textPrimary)
                 .focused($isFocused)
-                .onChange(of: searchText) { newValue in
+                .onChange(of: searchText) { _, newValue in
                     onTextChanged?(newValue)
                 }
                 .onSubmit {

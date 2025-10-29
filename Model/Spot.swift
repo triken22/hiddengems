@@ -1,5 +1,6 @@
 import Foundation
 import CoreLocation
+import UIKit
 
 struct Spot: Identifiable, Hashable, Codable {
     let id: String
@@ -121,6 +122,22 @@ struct SpotImage: Hashable, Identifiable, Codable {
         self.localIdentifier = localIdentifier
         self.remoteURL = remoteURL
         self.localImage = localImage
+    }
+    
+    // Custom Hashable implementation to exclude UIImage
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(localIdentifier)
+        hasher.combine(remoteURL)
+        // Note: We don't include localImage in hash since UIImage doesn't conform to Hashable
+    }
+    
+    // Custom Equatable implementation to exclude UIImage
+    static func == (lhs: SpotImage, rhs: SpotImage) -> Bool {
+        return lhs.id == rhs.id &&
+               lhs.localIdentifier == rhs.localIdentifier &&
+               lhs.remoteURL == rhs.remoteURL
+        // Note: We don't compare localImage since UIImage doesn't conform to Equatable
     }
     
     enum CodingKeys: String, CodingKey {
